@@ -1,0 +1,104 @@
+---
+/**
+ * SeriesCard - Carte de série pour les données Hashnode
+ *
+ * Ce composant affiche un aperçu d'une série (collection d'articles).
+ * Il est utilisé sur la page Series et la page Home (featured series).
+ */
+
+import { Icon } from 'astro-icon/components'
+import Link from './Link.astro'
+import type { Series } from '@/lib/hashnode/types'
+
+interface Props {
+  series: Series
+  /** Afficher en mode "featured" (plus grand, avec image) */
+  featured?: boolean
+}
+
+const { series, featured = false } = Astro.props
+const postCount = series.posts?.totalDocuments ?? 0
+---
+
+{featured ? (
+  <!-- Mode Featured (grande carte avec image) -->
+  <Link
+    href={`/series/${series.slug}`}
+    class="group block rounded-lg border border-border/50 overflow-hidden transition-all duration-200 hover:border-border hover:shadow-sm"
+  >
+    <!-- Image de couverture -->
+    {series.coverImage && (
+      <div class="aspect-video overflow-hidden bg-muted">
+        <img
+          src={series.coverImage}
+          alt={series.name}
+          class="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+        />
+      </div>
+    )}
+
+    <div class="p-4 space-y-2">
+      <!-- Badge nombre d'articles -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+          {postCount} {postCount > 1 ? 'Parts' : 'Part'}
+        </span>
+        <span class="text-xs text-primary font-medium">In Progress</span>
+      </div>
+
+      <!-- Titre -->
+      <h3 class="text-lg font-semibold group-hover:text-primary transition-colors">
+        {series.name}
+      </h3>
+
+      <!-- Description -->
+      {series.description?.text && (
+        <p class="text-sm text-muted-foreground line-clamp-3">
+          {series.description.text}
+        </p>
+      )}
+    </div>
+  </Link>
+) : (
+  <!-- Mode Liste (carte compacte) -->
+  <Link
+    href={`/series/${series.slug}`}
+    class="group flex items-start gap-4 py-4 transition-all duration-200 hover:bg-muted/30 -mx-2 px-2 rounded-md"
+  >
+    <!-- Image miniature -->
+    {series.coverImage && (
+      <div class="shrink-0">
+        <img
+          src={series.coverImage}
+          alt={series.name}
+          class="w-16 h-16 object-cover rounded-md opacity-80 group-hover:opacity-100 transition-opacity"
+        />
+      </div>
+    )}
+
+    <div class="flex-1 min-w-0 space-y-1">
+      <!-- Titre et badge -->
+      <div class="flex items-center gap-2">
+        <h3 class="text-base font-semibold group-hover:text-primary transition-colors">
+          {series.name}
+        </h3>
+        <span class="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium shrink-0">
+          {postCount} articles
+        </span>
+      </div>
+
+      <!-- Description -->
+      {series.description?.text && (
+        <p class="text-sm text-muted-foreground line-clamp-2">
+          {series.description.text}
+        </p>
+      )}
+
+      <!-- Lien visuel -->
+      <div class="flex items-center gap-1 text-xs text-primary/80">
+        <span>View series</span>
+        <Icon name="lucide:arrow-right" class="size-3 group-hover:translate-x-1 transition-transform" />
+      </div>
+    </div>
+  </Link>
+)}

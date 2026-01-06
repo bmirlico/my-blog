@@ -1,11 +1,11 @@
 import type { IconMap, SocialLink, Site } from '@/types'
 
 export const SITE: Site = {
-  title: 'Your Blog Name',
+  title: 'The Learning Machine',
   description:
-    'A brief description of your blog. This will be used in meta tags and social sharing.',
-  href: 'https://yourdomain.com',
-  author: 'your-author-id',
+    'A collection of notes, essays, and technical deep dives.',
+  href: 'https://thelearningmachine.dev',
+  author: 'bmirlico',
   locale: 'en-US',
   featuredPostCount: 2,
   postsPerPage: 6,
@@ -43,8 +43,16 @@ export const BREVO = {
 
 export const NAV_LINKS: SocialLink[] = [
   {
-    href: '/blog',
-    label: 'Blog',
+    href: '/',
+    label: 'Home',
+  },
+  {
+    href: '/series',
+    label: 'Series',
+  },
+  {
+    href: '/articles',
+    label: 'Articles',
   },
   {
     href: '/about',

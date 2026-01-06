@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { getAllPosts } from '@/lib/data-utils'
+import { getAllPosts } from '@/lib/hashnode/api'
 
 export const prerender = true
 
@@ -8,9 +8,8 @@ export const GET: APIRoute = async () => {
     const posts = await getAllPosts()
 
     const searchIndex = posts.map((post) => {
-      // Extract text content from HTML body (remove tags)
-      // The body property contains the raw HTML content
-      const htmlContent = (post as { body?: string }).body || ''
+      // Extract text content from HTML content (remove tags)
+      const htmlContent = post.content?.html || ''
       const textContent = htmlContent
         .replace(/<[^>]+>/g, ' ')
         .replace(/\s+/g, ' ')
@@ -18,12 +17,12 @@ export const GET: APIRoute = async () => {
 
       return {
         id: post.id || '',
-        title: post.data.title || '',
-        description: post.data.description || '',
-        date: post.data.date?.toISOString() || new Date().toISOString(),
-        tags: post.data.tags || [],
-        authors: post.data.authors || [],
-        url: `/blog/${post.id}`,
+        title: post.title || '',
+        description: post.brief || '',
+        date: post.publishedAt || new Date().toISOString(),
+        tags: post.tags?.map((tag) => tag.name) || [],
+        authors: post.author ? [post.author.name] : [],
+        url: `/articles/${post.slug}`,
         // Include full content for better search results
         content: textContent, // Full content for indexing
       }

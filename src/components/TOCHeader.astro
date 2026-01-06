@@ -1,11 +1,17 @@
 ---
+/**
+ * TOCHeader - Table of Contents for mobile (collapsible header)
+ *
+ * Displays a compact, collapsible TOC for mobile devices.
+ * Shows current section and reading progress.
+ */
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn, getHeadingMargin } from '@/lib/utils'
-import type { MarkdownHeading } from 'astro'
+import type { ExtractedHeading } from '@/lib/hashnode/api'
 import { Icon } from 'astro-icon/components'
 
 type Props = {
-  headings: MarkdownHeading[]
+  headings: ExtractedHeading[]
 }
 
 const { headings } = Astro.props

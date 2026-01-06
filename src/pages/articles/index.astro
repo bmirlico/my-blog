@@ -1,0 +1,100 @@
+---
+/**
+ * Page Articles - Liste de tous les articles
+ *
+ * Affiche tous les articles publiés sur Hashnode, triés par date.
+ * Chaque article est cliquable et mène à sa page de détail.
+ */
+
+import ArticleCard from '@/components/ArticleCard.astro'
+import Link from '@/components/Link.astro'
+import PageHead from '@/components/PageHead.astro'
+import { buttonVariants } from '@/components/ui/button'
+import Layout from '@/layouts/Layout.astro'
+import { Icon } from 'astro-icon/components'
+import { SITE } from '@/consts'
+
+// Import de la fonction API Hashnode
+import { getAllPosts } from '@/lib/hashnode/api'
+import type { Post } from '@/lib/hashnode/types'
+
+// Récupération de tous les articles
+let allPosts: Post[] = []
+
+try {
+  allPosts = await getAllPosts(50)  // Récupère jusqu'à 50 articles (limite API)
+} catch (error) {
+  console.error('Erreur lors de la récupération des articles:', error)
+}
+
+// Grouper les articles par année pour une meilleure organisation
+type PostsByYear = { [year: string]: Post[] }
+
+const postsByYear: PostsByYear = allPosts.reduce((acc, post) => {
+  const year = new Date(post.publishedAt).getFullYear().toString()
+  if (!acc[year]) {
+    acc[year] = []
+  }
+  acc[year].push(post)
+  return acc
+}, {} as PostsByYear)
+
+// Trier les années de la plus récente à la plus ancienne
+const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a))
+
+// Titre et description de la page
+const pageTitle = 'Articles'
+const pageDescription = 'All articles and writings.'
+---
+
+<Layout class="max-w-3xl">
+  <PageHead slot="head" title={pageTitle} description={pageDescription} />
+
+  <!-- Header -->
+  <section class="py-8 border-b border-border">
+    <h1 class="text-3xl font-bold mb-2">{pageTitle}</h1>
+    <p class="text-muted-foreground">
+      {pageDescription}
+      {allPosts.length > 0 && (
+        <span class="text-sm">({allPosts.length} articles)</span>
+      )}
+    </p>
+  </section>
+
+  <!-- Liste des articles par année -->
+  {allPosts.length > 0 ? (
+    <section class="py-8">
+      {sortedYears.map((year) => (
+        <div class="mb-12">
+          <!-- Année comme séparateur -->
+          <h2 class="text-lg font-semibold text-muted-foreground mb-4 sticky top-20 bg-background py-2 z-10">
+            {year}
+          </h2>
+
+          <div class="border-t border-border">
+            {postsByYear[year].map((post) => (
+              <ArticleCard post={post} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+  ) : (
+    <!-- Message si pas d'articles -->
+    <section class="py-12 text-center">
+      <Icon name="lucide:file-text" class="size-12 text-muted-foreground/50 mx-auto mb-4" />
+      <h2 class="text-lg font-semibold mb-2">Pas encore d'articles</h2>
+      <p class="text-muted-foreground mb-4">
+        Les articles apparaitront ici une fois publiés sur Hashnode.
+      </p>
+      <Link
+        href="https://hashnode.com"
+        class={buttonVariants({ variant: 'outline' })}
+        external
+      >
+        Écrire un article sur Hashnode
+        <Icon name="lucide:external-link" class="size-4 ml-2" />
+      </Link>
+    </section>
+  )}
+</Layout>

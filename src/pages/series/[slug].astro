@@ -1,0 +1,177 @@
+---
+/**
+ * Page Série individuelle - Détail d'une série avec ses articles
+ *
+ * Route dynamique : /series/[slug]
+ *
+ * getStaticPaths() génère une route pour chaque série existante.
+ * Cela permet à Astro de pré-générer toutes les pages au build.
+ */
+
+import ArticleCard from '@/components/ArticleCard.astro'
+import Link from '@/components/Link.astro'
+import PageHead from '@/components/PageHead.astro'
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import Layout from '@/layouts/Layout.astro'
+import { Icon } from 'astro-icon/components'
+
+// Import des fonctions API Hashnode
+import { getAllSeries, getSeriesBySlug } from '@/lib/hashnode/api'
+import type { Series, Post } from '@/lib/hashnode/types'
+
+// Cette fonction génère toutes les routes possibles au moment du build
+// Astro va appeler getStaticPaths() une fois, puis créer une page pour chaque objet retourné
+export async function getStaticPaths() {
+  // Récupère toutes les séries pour générer leurs routes
+  const allSeries = await getAllSeries(20)  // Limite API: 20 max
+
+  // Retourne un tableau d'objets avec les paramètres de chaque route
+  return allSeries.map((series) => ({
+    params: { slug: series.slug },  // Le [slug] dans l'URL
+    props: { series },               // Données passées à la page
+  }))
+}
+
+// Récupère les props passés par getStaticPaths
+interface Props {
+  series: Series
+}
+
+const { slug } = Astro.params
+const { series: initialSeries } = Astro.props
+
+// Récupère les détails complets de la série (avec tous les articles)
+let series: Series | null = null
+let posts: Post[] = []
+
+try {
+  series = await getSeriesBySlug(slug as string)
+  if (series?.posts?.edges) {
+    posts = series.posts.edges.map(edge => edge.node)
+  }
+} catch (error) {
+  console.error(`Erreur lors de la récupération de la série "${slug}":`, error)
+  series = initialSeries
+}
+
+// Si la série n'existe pas, on pourrait rediriger vers 404
+// Mais pour l'instant on affiche un message
+
+// Breadcrumbs pour la navigation
+const breadcrumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Series', href: '/series' },
+  { label: series?.name || 'Série', href: '' },
+]
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title={series?.name || 'Série'}
+    description={series?.description?.text || 'Une série d\'articles'}
+  />
+
+  {series ? (
+    <>
+      <!-- Breadcrumbs -->
+      <nav class="py-4 text-sm text-muted-foreground">
+        <ol class="flex items-center gap-2">
+          {breadcrumbs.map((crumb, index) => (
+            <>
+              {index > 0 && <Icon name="lucide:chevron-right" class="size-4" />}
+              {crumb.href ? (
+                <Link href={crumb.href} class="hover:text-foreground transition-colors">
+                  {crumb.label}
+                </Link>
+              ) : (
+                <span class="text-foreground font-medium">{crumb.label}</span>
+              )}
+            </>
+          ))}
+        </ol>
+      </nav>
+
+      <!-- Header de la série -->
+      <header class="py-8 border-b border-border">
+        <!-- Image de couverture -->
+        {series.coverImage && (
+          <div class="mb-6 rounded-lg overflow-hidden aspect-video">
+            <img
+              src={series.coverImage}
+              alt={series.name}
+              class="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-medium">
+            {posts.length} {posts.length > 1 ? 'articles' : 'article'}
+          </span>
+          <span class="text-xs text-primary font-medium">Series</span>
+        </div>
+
+        <h1 class="text-3xl font-bold mb-4">{series.name}</h1>
+
+        {series.description?.text && (
+          <p class="text-lg text-muted-foreground">
+            {series.description.text}
+          </p>
+        )}
+      </header>
+
+      <!-- Liste des articles de la série -->
+      <section class="py-8">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-6">
+          Articles in this series
+        </h2>
+
+        {posts.length > 0 ? (
+          <div class="border-t border-border">
+            {posts.map((post, index) => (
+              <div class="relative">
+                <!-- Numéro de l'article dans la série -->
+                <div class="absolute -left-8 top-6 text-xs text-muted-foreground/50 font-medium">
+                  {String(index + 1).padStart(2, '0')}
+                </div>
+                <ArticleCard post={post} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p class="text-muted-foreground py-8 text-center">
+            Aucun article dans cette série pour le moment.
+          </p>
+        )}
+      </section>
+
+      <!-- Navigation retour -->
+      <nav class="py-8 border-t border-border">
+        <Link
+          href="/series"
+          class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+        >
+          <Icon name="lucide:arrow-left" class="size-4" />
+          Back to all series
+        </Link>
+      </nav>
+    </>
+  ) : (
+    <!-- Série non trouvée -->
+    <section class="py-12 text-center">
+      <Icon name="lucide:alert-circle" class="size-12 text-muted-foreground/50 mx-auto mb-4" />
+      <h1 class="text-2xl font-bold mb-2">Série non trouvée</h1>
+      <p class="text-muted-foreground mb-6">
+        La série que vous recherchez n'existe pas ou a été supprimée.
+      </p>
+      <Link
+        href="/series"
+        class="text-primary hover:underline flex items-center justify-center gap-2"
+      >
+        <Icon name="lucide:arrow-left" class="size-4" />
+        Retour aux séries
+      </Link>
+    </section>
+  )}
+</Layout>

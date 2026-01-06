@@ -1,7 +1,13 @@
+/**
+ * Flux RSS
+ *
+ * Génère un flux RSS avec tous les articles de Hashnode.
+ */
+
 import { SITE } from '@/consts'
 import rss from '@astrojs/rss'
 import type { APIContext } from 'astro'
-import { getAllPosts } from '@/lib/data-utils'
+import { getAllPosts } from '@/lib/hashnode/api'
 
 export async function GET(context: APIContext) {
   try {
@@ -12,10 +18,10 @@ export async function GET(context: APIContext) {
       description: SITE.description,
       site: context.site ?? SITE.href,
       items: posts.map((post) => ({
-        title: post.data.title,
-        description: post.data.description,
-        pubDate: post.data.date,
-        link: `/blog/${post.id}/`,
+        title: post.title,
+        description: post.brief,
+        pubDate: new Date(post.publishedAt),
+        link: `/articles/${post.slug}/`,
       })),
     })
   } catch (error) {

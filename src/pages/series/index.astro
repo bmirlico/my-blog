@@ -1,0 +1,73 @@
+---
+/**
+ * Page Series - Liste de toutes les séries
+ *
+ * Affiche toutes les séries (collections d'articles) disponibles sur Hashnode.
+ * Chaque série est cliquable et mène à sa page de détail avec tous ses articles.
+ */
+
+import SeriesCard from '@/components/SeriesCard.astro'
+import Link from '@/components/Link.astro'
+import PageHead from '@/components/PageHead.astro'
+import { buttonVariants } from '@/components/ui/button'
+import Layout from '@/layouts/Layout.astro'
+import { Icon } from 'astro-icon/components'
+import { SITE } from '@/consts'
+
+// Import de la fonction API Hashnode
+import { getAllSeries } from '@/lib/hashnode/api'
+import type { Series } from '@/lib/hashnode/types'
+
+// Récupération de toutes les séries
+let allSeries: Series[] = []
+
+try {
+  allSeries = await getAllSeries(20)  // Limite API: 20 max
+} catch (error) {
+  console.error('Erreur lors de la récupération des séries:', error)
+}
+
+// Titre et description de la page
+const pageTitle = 'Series'
+const pageDescription = 'Collections of related articles organized by topic.'
+---
+
+<Layout class="max-w-3xl">
+  <PageHead slot="head" title={pageTitle} description={pageDescription} />
+
+  <!-- Header -->
+  <section class="py-8 border-b border-border">
+    <h1 class="text-3xl font-bold mb-2">{pageTitle}</h1>
+    <p class="text-muted-foreground">
+      {pageDescription}
+    </p>
+  </section>
+
+  <!-- Liste des séries -->
+  {allSeries.length > 0 ? (
+    <section class="py-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {allSeries.map((series) => (
+          <SeriesCard series={series} featured={true} />
+        ))}
+      </div>
+    </section>
+  ) : (
+    <!-- Message si pas de séries -->
+    <section class="py-12 text-center">
+      <Icon name="lucide:layers" class="size-12 text-muted-foreground/50 mx-auto mb-4" />
+      <h2 class="text-lg font-semibold mb-2">Pas encore de séries</h2>
+      <p class="text-muted-foreground mb-4">
+        Les séries apparaitront ici une fois créées sur Hashnode.
+      </p>
+      <Link
+        href="https://hashnode.com"
+        class={buttonVariants({ variant: 'outline' })}
+        external
+      >
+        Créer une série sur Hashnode
+        <Icon name="lucide:external-link" class="size-4 ml-2" />
+      </Link>
+    </section>
+  )}
+</Layout>
