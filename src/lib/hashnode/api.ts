@@ -129,7 +129,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
           publishedAt
           readTimeInMinutes
           coverImage { url }
-          author { name profilePicture bio }
+          author { name profilePicture }
           tags { name slug }
           content { html markdown }
           series { name slug }
