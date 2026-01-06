@@ -22,13 +22,21 @@ export function getClient(): GraphQLClient {
 /**
  * Le host de ton blog Hashnode (ex: the-learning-machine.hashnode.dev)
  * Récupéré depuis les variables d'environnement
+ *
+ * Note: On utilise process.env comme fallback car Vercel peut exposer
+ * les variables différemment selon le contexte de build
  */
-export const HASHNODE_HOST = import.meta.env.HASHNODE_HOST as string;
+export const HASHNODE_HOST =
+  import.meta.env.HASHNODE_HOST ||
+  process.env.HASHNODE_HOST ||
+  'the-learning-machine.hashnode.dev';  // Fallback hardcodé pour garantir le fonctionnement
+
+// Log pour debug (visible dans les logs de build Vercel)
+console.log('[Hashnode] HASHNODE_HOST:', HASHNODE_HOST);
 
 // Vérification que la variable d'environnement est définie
-if (!HASHNODE_HOST) {
+if (!import.meta.env.HASHNODE_HOST && !process.env.HASHNODE_HOST) {
   console.warn(
-    "HASHNODE_HOST n'est pas défini dans les variables d'environnement. " +
-    "Crée un fichier .env avec HASHNODE_HOST=ton-blog.hashnode.dev"
+    "[Hashnode] Variables d'environnement non détectées, utilisation du fallback hardcodé"
   );
 }
