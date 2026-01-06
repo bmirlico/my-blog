@@ -39,16 +39,32 @@ import type {
 export async function getAllPosts(first: number = 50): Promise<Post[]> {
   const client = getClient();
 
+  console.log('[Hashnode API] getAllPosts called with host:', HASHNODE_HOST, 'first:', first);
+
   try {
     const data = await client.request<PostsResponse>(GET_ALL_POSTS, {
       host: HASHNODE_HOST,
       first,
     });
 
-    // Extraire les articles des "edges" (structure GraphQL)
-    return data.publication.posts.edges.map((edge) => edge.node);
+    console.log('[Hashnode API] Response received:', JSON.stringify(data, null, 2).slice(0, 500));
+
+    // Vérifier que la publication existe
+    if (!data?.publication) {
+      console.error('[Hashnode API] Publication not found for host:', HASHNODE_HOST);
+      return [];
+    }
+
+    if (!data.publication.posts?.edges) {
+      console.error('[Hashnode API] No posts edges found');
+      return [];
+    }
+
+    const posts = data.publication.posts.edges.map((edge) => edge.node);
+    console.log('[Hashnode API] Found', posts.length, 'posts');
+    return posts;
   } catch (error) {
-    console.error("Erreur lors de la récupération des articles:", error);
+    console.error("[Hashnode API] Error fetching posts:", error);
     return [];
   }
 }
