@@ -116,7 +116,7 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
  * @returns L'article ou null si non trouvé
  */
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  console.log('[Hashnode API] getPostBySlug called with slug:', slug);
+  console.log('[Hashnode API] getPostBySlug called with slug:', slug, 'host:', HASHNODE_HOST);
 
   const query = `
     query GetPost($host: String!, $slug: String!) {
@@ -138,6 +138,9 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     }
   `;
 
+  // Timestamp pour forcer un cache-bust absolu
+  const timestamp = Date.now();
+
   try {
     const response = await fetch('https://gql.hashnode.com', {
       method: 'POST',
@@ -145,7 +148,8 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
-        'User-Agent': 'Astro-Blog-Builder/1.0',
+        'X-Request-Time': timestamp.toString(),
+        'User-Agent': `Astro-Blog-Builder/1.0 (${timestamp})`,
       },
       body: JSON.stringify({
         query,
@@ -154,8 +158,11 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
       cache: 'no-store',
     });
 
+    console.log('[Hashnode API] getPostBySlug response status:', response.status);
+
     const data = await response.json();
-    console.log('[Hashnode API] getPostBySlug response for', slug, ':', data?.data?.publication?.post ? 'FOUND' : 'NOT FOUND');
+    console.log('[Hashnode API] getPostBySlug raw response:', JSON.stringify(data).slice(0, 500));
+    console.log('[Hashnode API] getPostBySlug for', slug, ':', data?.data?.publication?.post ? 'FOUND' : 'NOT FOUND');
 
     if (data.errors) {
       console.error('[Hashnode API] GraphQL errors:', JSON.stringify(data.errors));

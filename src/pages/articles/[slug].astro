@@ -37,6 +37,12 @@ let post: Post | null = null
 
 try {
   post = await getPostBySlug(slug as string)
+
+  // Si getPostBySlug retourne null, utiliser initialPost comme fallback
+  if (!post && initialPost) {
+    console.log(`[Article Page] getPostBySlug returned null for "${slug}", using initialPost as fallback`)
+    post = initialPost
+  }
 } catch (error) {
   console.error(`Erreur lors de la récupération de l'article "${slug}":`, error)
   post = initialPost
