@@ -5,7 +5,7 @@ export const SITE: Site = {
   description:
     'A collection of notes, essays, and technical deep dives.',
   href: 'https://thelearningmachine.dev',
-  author: 'bmirlico',
+  author: 'Bastien Mirlicourtois',
   locale: 'en-US',
   featuredPostCount: 2,
   postsPerPage: 6,
@@ -62,15 +62,19 @@ export const NAV_LINKS: SocialLink[] = [
 
 export const SOCIAL_LINKS: SocialLink[] = [
   {
-    href: 'https://github.com/username',
+    href: 'https://github.com/bmirlico',
     label: 'GitHub',
   },
   {
-    href: 'https://twitter.com/username',
+    href: 'https://linkedin.com/in/bastien-mirlicourtois',
+    label: 'LinkedIn',
+  },
+  {
+    href: 'https://x.com/bmirlico',
     label: 'Twitter',
   },
   {
-    href: 'mailto:your@email.com',
+    href: 'mailto:bastienmirlicourtois@gmail.com',
     label: 'Email',
   },
   {
