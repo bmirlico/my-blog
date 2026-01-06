@@ -68,11 +68,15 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'User-Agent': 'Astro-Blog-Builder/1.0',
       },
       body: JSON.stringify({
         query,
         variables: { host: HASHNODE_HOST, first },
       }),
+      cache: 'no-store',  // Force no caching in Node.js fetch
     });
 
     console.log('[Hashnode API] Response status:', response.status);
