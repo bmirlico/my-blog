@@ -341,3 +341,27 @@ export async function getPostsBySeries(seriesSlug: string): Promise<Post[]> {
 
   return series.posts.edges.map((edge) => edge.node);
 }
+
+/**
+ * Récupère les articles adjacents (précédent et suivant) pour la navigation
+ * @param currentSlug - Slug de l'article actuel
+ * @returns { older: Post | null, newer: Post | null }
+ */
+export async function getAdjacentPosts(currentSlug: string): Promise<{
+  older: Post | null;
+  newer: Post | null;
+}> {
+  const allPosts = await getAllPosts(100); // Tous les articles triés par date (plus récent en premier)
+  const currentIndex = allPosts.findIndex(post => post.slug === currentSlug);
+
+  if (currentIndex === -1) {
+    return { older: null, newer: null };
+  }
+
+  return {
+    // newer = article plus récent (index inférieur dans le tableau)
+    newer: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
+    // older = article plus ancien (index supérieur dans le tableau)
+    older: currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null,
+  };
+}

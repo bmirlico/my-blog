@@ -6,17 +6,20 @@
  *
  * getStaticPaths() génère une route pour chaque article existant.
  * Le contenu HTML est récupéré depuis Hashnode et rendu directement.
+ *
+ * Layout: TOC à gauche, contenu à droite (comme le template original)
  */
 
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
+import PostNavigation from '@/components/PostNavigation.astro'
 import TOCHeader from '@/components/TOCHeader.astro'
 import TOCSidebar from '@/components/TOCSidebar.astro'
 import Layout from '@/layouts/Layout.astro'
 import { Icon } from 'astro-icon/components'
 
 // Import des fonctions API Hashnode
-import { getAllPosts, getPostBySlug, formatDate, extractHeadingsFromHtml } from '@/lib/hashnode/api'
+import { getAllPosts, getPostBySlug, formatDate, extractHeadingsFromHtml, getAdjacentPosts } from '@/lib/hashnode/api'
 import type { Post } from '@/lib/hashnode/types'
 
 // Génère toutes les routes possibles au moment du build
@@ -48,6 +51,9 @@ try {
   post = initialPost
 }
 
+// Récupère les articles adjacents pour la navigation Previous/Next
+const { older, newer } = await getAdjacentPosts(slug as string)
+
 // Formatage de la date
 const publishedDate = post ? formatDate(post.publishedAt) : ''
 
@@ -75,10 +81,8 @@ const breadcrumbs = [
   )}
 
   {post ? (
-    <!-- Layout grid: contenu principal + TOC sidebar sur desktop -->
-    <div class="xl:grid xl:grid-cols-[1fr_280px] xl:gap-8">
-    <article>
-      <!-- Breadcrumbs -->
+    <>
+      <!-- Breadcrumbs (full width, before grid) -->
       <nav class="py-4 text-sm text-muted-foreground">
         <ol class="flex items-center gap-2 flex-wrap">
           {breadcrumbs.map((crumb, index) => (
@@ -96,8 +100,8 @@ const breadcrumbs = [
         </ol>
       </nav>
 
-      <!-- Header de l'article -->
-      <header class="py-8 border-b border-border">
+      <!-- Header de l'article (centré, full width) -->
+      <header class="py-8 border-b border-border text-center">
         <!-- Série (si l'article appartient à une série) -->
         {post.series && (
           <Link
@@ -114,30 +118,14 @@ const breadcrumbs = [
           {post.title}
         </h1>
 
-        <!-- Métadonnées -->
-        <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <!-- Auteur -->
-          {post.author && (
-            <div class="flex items-center gap-2">
-              {post.author.profilePicture && (
-                <img
-                  src={post.author.profilePicture}
-                  alt={post.author.name}
-                  class="w-8 h-8 rounded-full"
-                />
-              )}
-              <span class="font-medium">{post.author.name}</span>
-            </div>
-          )}
-
-          <span class="text-muted-foreground/40">·</span>
-
+        <!-- Métadonnées (centrées) -->
+        <div class="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
           <!-- Date -->
           <time datetime={post.publishedAt}>
             {publishedDate}
           </time>
 
-          <span class="text-muted-foreground/40">·</span>
+          <span class="text-muted-foreground/40">|</span>
 
           <!-- Temps de lecture -->
           <span class="flex items-center gap-1">
@@ -146,65 +134,77 @@ const breadcrumbs = [
           </span>
         </div>
 
-        <!-- Tags -->
+        <!-- Tags (centrés) -->
         {post.tags && post.tags.length > 0 && (
-          <div class="flex flex-wrap gap-2 mt-4">
+          <div class="flex flex-wrap justify-center gap-2 mt-4">
             {post.tags.map((tag) => (
               <span class="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-                {tag.name}
+                # {tag.name}
               </span>
             ))}
           </div>
         )}
       </header>
 
-      <!-- Image de couverture -->
-      {post.coverImage && (
-        <div class="py-8">
-          <img
-            src={post.coverImage.url}
-            alt={post.title}
-            class="w-full rounded-lg"
-          />
-        </div>
-      )}
-
-      <!-- Contenu de l'article -->
-      <div class="py-8 prose prose-neutral dark:prose-invert max-w-none">
-        {post.content?.html ? (
-          <Fragment set:html={post.content.html} />
-        ) : (
-          <p class="text-muted-foreground">Contenu non disponible.</p>
-        )}
+      <!-- Navigation Previous/Next Post -->
+      <div class="py-6">
+        <PostNavigation
+          newerPost={newer ? { title: newer.title, slug: newer.slug } : undefined}
+          olderPost={older ? { title: older.title, slug: older.slug } : undefined}
+        />
       </div>
 
-      <!-- Navigation retour -->
-      <nav class="py-8 border-t border-border flex items-center justify-between">
-        <Link
-          href="/articles"
-          class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-        >
-          <Icon name="lucide:arrow-left" class="size-4" />
-          All articles
-        </Link>
-
-        {post.series && (
-          <Link
-            href={`/series/${post.series.slug}`}
-            class="text-sm text-primary hover:underline flex items-center gap-2"
-          >
-            More in {post.series.name}
-            <Icon name="lucide:arrow-right" class="size-4" />
-          </Link>
+      <!-- Layout grid: TOC à gauche + contenu à droite sur desktop -->
+      <div class="xl:grid xl:grid-cols-[280px_1fr] xl:gap-8">
+        <!-- TOC Sidebar pour desktop (sticky, à gauche) -->
+        {headings.length > 0 && (
+          <TOCSidebar headings={headings} />
         )}
-      </nav>
-    </article>
 
-    <!-- TOC Sidebar pour desktop (sticky, à droite) -->
-    {headings.length > 0 && (
-      <TOCSidebar headings={headings} />
-    )}
-    </div>
+        <article>
+          <!-- Image de couverture -->
+          {post.coverImage && (
+            <div class="pb-8">
+              <img
+                src={post.coverImage.url}
+                alt={post.title}
+                class="w-full rounded-lg"
+              />
+            </div>
+          )}
+
+          <!-- Contenu de l'article -->
+          <div class="prose prose-neutral dark:prose-invert max-w-none">
+            {post.content?.html ? (
+              <Fragment set:html={post.content.html} />
+            ) : (
+              <p class="text-muted-foreground">Contenu non disponible.</p>
+            )}
+          </div>
+
+          <!-- Navigation retour -->
+          <nav class="py-8 border-t border-border flex items-center justify-between">
+            <Link
+              href="/articles"
+              class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+            >
+              <Icon name="lucide:arrow-left" class="size-4" />
+              All articles
+            </Link>
+
+            {post.series && (
+              <Link
+                href={`/series/${post.series.slug}`}
+                class="text-sm text-primary hover:underline flex items-center gap-2"
+              >
+                More in {post.series.name}
+                <Icon name="lucide:arrow-right" class="size-4" />
+              </Link>
+            )}
+          </nav>
+        </article>
+      </div>
+    </>
   ) : (
     <!-- Article non trouvé -->
     <section class="py-12 text-center">
@@ -223,4 +223,3 @@ const breadcrumbs = [
     </section>
   )}
 </Layout>
-
