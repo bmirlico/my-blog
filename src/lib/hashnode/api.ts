@@ -116,17 +116,55 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
  * @returns L'article ou null si non trouvé
  */
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  const client = getClient();
+  console.log('[Hashnode API] getPostBySlug called with slug:', slug);
+
+  const query = `
+    query GetPost($host: String!, $slug: String!) {
+      publication(host: $host) {
+        post(slug: $slug) {
+          id
+          title
+          slug
+          brief
+          publishedAt
+          readTimeInMinutes
+          coverImage { url }
+          author { name profilePicture bio }
+          tags { name slug }
+          content { html markdown }
+          series { name slug }
+        }
+      }
+    }
+  `;
 
   try {
-    const data = await client.request<PostResponse>(GET_POST_BY_SLUG, {
-      host: HASHNODE_HOST,
-      slug,
+    const response = await fetch('https://gql.hashnode.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'User-Agent': 'Astro-Blog-Builder/1.0',
+      },
+      body: JSON.stringify({
+        query,
+        variables: { host: HASHNODE_HOST, slug },
+      }),
+      cache: 'no-store',
     });
 
-    return data.publication.post;
+    const data = await response.json();
+    console.log('[Hashnode API] getPostBySlug response for', slug, ':', data?.data?.publication?.post ? 'FOUND' : 'NOT FOUND');
+
+    if (data.errors) {
+      console.error('[Hashnode API] GraphQL errors:', JSON.stringify(data.errors));
+      return null;
+    }
+
+    return data?.data?.publication?.post || null;
   } catch (error) {
-    console.error(`Erreur lors de la récupération de l'article "${slug}":`, error);
+    console.error(`[Hashnode API] Error fetching post "${slug}":`, error);
     return null;
   }
 }
