@@ -37,30 +37,67 @@ import type {
  * @returns Liste des articles triés par date de publication (plus récent en premier)
  */
 export async function getAllPosts(first: number = 50): Promise<Post[]> {
-  const client = getClient();
-
   console.log('[Hashnode API] getAllPosts called with host:', HASHNODE_HOST, 'first:', first);
 
+  // Utiliser fetch natif au lieu de graphql-request pour debug
+  const query = `
+    query GetAllPosts($host: String!, $first: Int!) {
+      publication(host: $host) {
+        posts(first: $first) {
+          edges {
+            node {
+              id
+              title
+              slug
+              brief
+              publishedAt
+              readTimeInMinutes
+              coverImage { url }
+              author { name profilePicture }
+              tags { name slug }
+              series { name slug }
+            }
+          }
+        }
+      }
+    }
+  `;
+
   try {
-    const data = await client.request<PostsResponse>(GET_ALL_POSTS, {
-      host: HASHNODE_HOST,
-      first,
+    const response = await fetch('https://gql.hashnode.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        variables: { host: HASHNODE_HOST, first },
+      }),
     });
 
-    console.log('[Hashnode API] Response received:', JSON.stringify(data, null, 2).slice(0, 500));
+    console.log('[Hashnode API] Response status:', response.status);
+
+    const data = await response.json();
+    console.log('[Hashnode API] Response data:', JSON.stringify(data, null, 2).slice(0, 1000));
+
+    // Vérifier les erreurs GraphQL
+    if (data.errors) {
+      console.error('[Hashnode API] GraphQL errors:', JSON.stringify(data.errors));
+      return [];
+    }
 
     // Vérifier que la publication existe
-    if (!data?.publication) {
+    if (!data?.data?.publication) {
       console.error('[Hashnode API] Publication not found for host:', HASHNODE_HOST);
       return [];
     }
 
-    if (!data.publication.posts?.edges) {
+    if (!data.data.publication.posts?.edges) {
       console.error('[Hashnode API] No posts edges found');
       return [];
     }
 
-    const posts = data.publication.posts.edges.map((edge) => edge.node);
+    const posts = data.data.publication.posts.edges.map((edge: any) => edge.node);
     console.log('[Hashnode API] Found', posts.length, 'posts');
     return posts;
   } catch (error) {
