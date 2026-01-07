@@ -351,7 +351,7 @@ export async function getAdjacentPosts(currentSlug: string): Promise<{
   older: Post | null;
   newer: Post | null;
 }> {
-  const allPosts = await getAllPosts(100); // Tous les articles triés par date (plus récent en premier)
+  const allPosts = await getAllPosts(50); // Tous les articles triés par date (max 50 selon API Hashnode)
   const currentIndex = allPosts.findIndex(post => post.slug === currentSlug);
 
   if (currentIndex === -1) {

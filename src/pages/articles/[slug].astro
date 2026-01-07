@@ -10,6 +10,7 @@
  * Layout: TOC à gauche, contenu à droite (comme le template original)
  */
 
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import PostNavigation from '@/components/PostNavigation.astro'
@@ -60,11 +61,10 @@ const publishedDate = post ? formatDate(post.publishedAt) : ''
 // Extraction des headings pour la TOC
 const headings = post?.content?.html ? extractHeadingsFromHtml(post.content.html) : []
 
-// Breadcrumbs
-const breadcrumbs = [
-  { label: 'Home', href: '/' },
+// Breadcrumbs (pour le composant Breadcrumbs.astro)
+const breadcrumbItems = [
   { label: 'Articles', href: '/articles' },
-  { label: post?.title || 'Article', href: '' },
+  { label: post?.title || 'Article' },
 ]
 ---
 
@@ -83,22 +83,9 @@ const breadcrumbs = [
   {post ? (
     <>
       <!-- Breadcrumbs (full width, before grid) -->
-      <nav class="py-4 text-sm text-muted-foreground">
-        <ol class="flex items-center gap-2 flex-wrap">
-          {breadcrumbs.map((crumb, index) => (
-            <>
-              {index > 0 && <Icon name="lucide:chevron-right" class="size-4 shrink-0" />}
-              {crumb.href ? (
-                <Link href={crumb.href} class="hover:text-foreground transition-colors">
-                  {crumb.label}
-                </Link>
-              ) : (
-                <span class="text-foreground font-medium line-clamp-1">{crumb.label}</span>
-              )}
-            </>
-          ))}
-        </ol>
-      </nav>
+      <div class="py-4">
+        <Breadcrumbs items={breadcrumbItems} />
+      </div>
 
       <!-- Header de l'article (centré, full width) -->
       <header class="py-8 border-b border-border text-center">
