@@ -4,9 +4,7 @@
  *
  * Route dynamique : /articles/[slug]
  *
- * getStaticPaths() génère une route pour chaque article existant.
- * Le contenu HTML est récupéré depuis Hashnode et rendu directement.
- *
+ * Adapté du template original astro-erudite pour Hashnode.
  * Layout: TOC à gauche, contenu à droite (comme le template original)
  */
 
@@ -16,6 +14,7 @@ import PageHead from '@/components/PageHead.astro'
 import PostNavigation from '@/components/PostNavigation.astro'
 import TOCHeader from '@/components/TOCHeader.astro'
 import TOCSidebar from '@/components/TOCSidebar.astro'
+import { badgeVariants } from '@/components/ui/badge'
 import Layout from '@/layouts/Layout.astro'
 import { Icon } from 'astro-icon/components'
 
@@ -61,14 +60,14 @@ const publishedDate = post ? formatDate(post.publishedAt) : ''
 // Extraction des headings pour la TOC
 const headings = post?.content?.html ? extractHeadingsFromHtml(post.content.html) : []
 
-// Breadcrumbs (pour le composant Breadcrumbs.astro)
+// Breadcrumbs avec icônes (comme le template original)
 const breadcrumbItems = [
-  { label: 'Articles', href: '/articles' },
-  { label: post?.title || 'Article' },
+  { label: 'Articles', href: '/articles', icon: 'lucide:library-big' },
+  { label: post?.title || 'Article', icon: 'lucide:book-open-text' },
 ]
 ---
 
-<Layout class="max-w-3xl xl:max-w-6xl">
+<Layout>
   <PageHead
     slot="head"
     title={post?.title || 'Article'}
@@ -81,117 +80,105 @@ const breadcrumbItems = [
   )}
 
   {post ? (
-    <>
-      <!-- Breadcrumbs (full width, before grid) -->
-      <div class="py-4">
+    <section
+      class="grid grid-cols-[minmax(0px,1fr)_min(calc(var(--breakpoint-md)-2rem),100%)_minmax(0px,1fr)] gap-y-6"
+    >
+      <!-- Breadcrumbs -->
+      <div class="col-start-2">
         <Breadcrumbs items={breadcrumbItems} />
       </div>
 
-      <!-- Header de l'article (centré, full width) -->
-      <header class="py-8 border-b border-border text-center">
-        <!-- Série (si l'article appartient à une série) -->
-        {post.series && (
-          <Link
-            href={`/series/${post.series.slug}`}
-            class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mb-4"
+      <!-- Image de couverture (full width) -->
+      {post.coverImage && (
+        <img
+          src={post.coverImage.url}
+          alt={post.title}
+          class="col-span-full mx-auto w-full max-w-5xl object-cover"
+        />
+      )}
+
+      <!-- Header de l'article (centré) -->
+      <section class="col-start-2 flex flex-col gap-y-6 text-center">
+        <div class="flex flex-col">
+          <!-- Série (si l'article appartient à une série) -->
+          {post.series && (
+            <Link
+              href={`/series/${post.series.slug}`}
+              class="inline-flex items-center justify-center gap-1.5 text-sm text-primary hover:underline mb-2"
+            >
+              <Icon name="lucide:layers" class="size-4" />
+              {post.series.name}
+            </Link>
+          )}
+
+          <!-- Titre -->
+          <h1
+            class="mb-2 scroll-mt-31 text-3xl leading-tight font-medium sm:text-4xl"
+            id="post-title"
           >
-            <Icon name="lucide:layers" class="size-4" />
-            {post.series.name}
-          </Link>
-        )}
+            {post.title}
+          </h1>
 
-        <!-- Titre -->
-        <h1 class="text-3xl sm:text-4xl font-bold mb-4 leading-tight">
-          {post.title}
-        </h1>
+          <!-- Métadonnées -->
+          <div
+            class="text-muted-foreground divide-border mb-4 flex flex-col items-center justify-center divide-y text-xs sm:flex-row sm:flex-wrap sm:divide-x sm:divide-y-0 sm:text-sm"
+          >
+            <div class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
+              <span>{publishedDate}</span>
+            </div>
 
-        <!-- Métadonnées (centrées) -->
-        <div class="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-          <!-- Date -->
-          <time datetime={post.publishedAt}>
-            {publishedDate}
-          </time>
+            <div class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
+              <span>{post.readTimeInMinutes} min read</span>
+            </div>
+          </div>
 
-          <span class="text-muted-foreground/40">|</span>
-
-          <!-- Temps de lecture -->
-          <span class="flex items-center gap-1">
-            <Icon name="lucide:clock" class="size-4" />
-            {post.readTimeInMinutes} min read
-          </span>
+          <!-- Tags -->
+          {post.tags && post.tags.length > 0 && (
+            <div class="flex flex-wrap justify-center gap-2">
+              {post.tags.map((tag) => (
+                <a
+                  href={`/tags/${tag.slug}`}
+                  class={badgeVariants({ variant: 'muted' })}
+                >
+                  <Icon name="lucide:hash" class="size-3" />
+                  {tag.name}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
-        <!-- Tags (centrés) -->
-        {post.tags && post.tags.length > 0 && (
-          <div class="flex flex-wrap justify-center gap-2 mt-4">
-            {post.tags.map((tag) => (
-              <span class="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-                # {tag.name}
-              </span>
-            ))}
-          </div>
-        )}
-      </header>
+        <!-- Navigation Previous/Next Post -->
+        <PostNavigation
+          newerPost={newer ? { title: newer.title, slug: newer.slug } : undefined}
+          olderPost={older ? { title: older.title, slug: older.slug } : undefined}
+        />
+      </section>
 
-      <!-- Navigation Previous/Next Post -->
-      <div class="py-6">
+      <!-- TOC Sidebar pour desktop (sticky, à gauche) -->
+      {headings.length > 0 && (
+        <div class="col-start-1 row-start-3 row-span-2">
+          <TOCSidebar headings={headings} />
+        </div>
+      )}
+
+      <!-- Contenu de l'article -->
+      <article class="prose col-start-2 max-w-none dark:prose-invert">
+        {post.content?.html ? (
+          <Fragment set:html={post.content.html} />
+        ) : (
+          <p class="text-muted-foreground">Contenu non disponible.</p>
+        )}
+      </article>
+
+      <!-- Navigation Previous/Next Post (fin de l'article) -->
+      <div class="col-start-2">
         <PostNavigation
           newerPost={newer ? { title: newer.title, slug: newer.slug } : undefined}
           olderPost={older ? { title: older.title, slug: older.slug } : undefined}
         />
       </div>
-
-      <!-- Layout grid: TOC à gauche + contenu à droite sur desktop -->
-      <div class="xl:grid xl:grid-cols-[280px_1fr] xl:gap-8">
-        <!-- TOC Sidebar pour desktop (sticky, à gauche) -->
-        {headings.length > 0 && (
-          <TOCSidebar headings={headings} />
-        )}
-
-        <article>
-          <!-- Image de couverture -->
-          {post.coverImage && (
-            <div class="pb-8">
-              <img
-                src={post.coverImage.url}
-                alt={post.title}
-                class="w-full rounded-lg"
-              />
-            </div>
-          )}
-
-          <!-- Contenu de l'article -->
-          <div class="prose prose-neutral dark:prose-invert max-w-none">
-            {post.content?.html ? (
-              <Fragment set:html={post.content.html} />
-            ) : (
-              <p class="text-muted-foreground">Contenu non disponible.</p>
-            )}
-          </div>
-
-          <!-- Navigation retour -->
-          <nav class="py-8 border-t border-border flex items-center justify-between">
-            <Link
-              href="/articles"
-              class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-            >
-              <Icon name="lucide:arrow-left" class="size-4" />
-              All articles
-            </Link>
-
-            {post.series && (
-              <Link
-                href={`/series/${post.series.slug}`}
-                class="text-sm text-primary hover:underline flex items-center gap-2"
-              >
-                More in {post.series.name}
-                <Icon name="lucide:arrow-right" class="size-4" />
-              </Link>
-            )}
-          </nav>
-        </article>
-      </div>
-    </>
+    </section>
   ) : (
     <!-- Article non trouvé -->
     <section class="py-12 text-center">
