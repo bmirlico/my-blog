@@ -155,21 +155,24 @@ const breadcrumbItems = [
         />
       </section>
 
-      <!-- TOC Sidebar pour desktop (à gauche, proche du contenu) -->
-      {headings.length > 0 && (
-        <div class="col-start-1 row-start-3 row-span-2 flex justify-end pr-12">
-          <TOCSidebar headings={headings} />
-        </div>
-      )}
-
-      <!-- Contenu de l'article -->
-      <article class="prose col-start-2 max-w-none dark:prose-invert">
-        {post.content?.html ? (
-          <Fragment set:html={post.content.html} />
-        ) : (
-          <p class="text-muted-foreground">Contenu non disponible.</p>
+      <!-- Wrapper pour TOC + Contenu (toujours alignés) -->
+      <div class="col-span-full grid grid-cols-[minmax(0px,1fr)_min(calc(var(--breakpoint-md)-2rem),100%)_minmax(0px,1fr)]">
+        <!-- TOC Sidebar pour desktop (à gauche, proche du contenu) -->
+        {headings.length > 0 && (
+          <div class="col-start-1 flex justify-end pr-12">
+            <TOCSidebar headings={headings} />
+          </div>
         )}
-      </article>
+
+        <!-- Contenu de l'article -->
+        <article class="prose col-start-2 max-w-none dark:prose-invert">
+          {post.content?.html ? (
+            <Fragment set:html={post.content.html} />
+          ) : (
+            <p class="text-muted-foreground">Contenu non disponible.</p>
+          )}
+        </article>
+      </div>
 
       <!-- Navigation Previous/Next Post (fin de l'article) -->
       <div class="col-start-2">
