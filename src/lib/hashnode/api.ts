@@ -13,20 +13,20 @@
 
 import { getClient, HASHNODE_HOST } from "./client";
 import {
-  GET_ALL_POSTS,
-  GET_POST_BY_SLUG,
-  GET_ALL_SERIES,
-  GET_SERIES_BY_SLUG,
-  GET_PUBLICATION_INFO,
+	GET_ALL_POSTS,
+	GET_ALL_SERIES,
+	GET_POST_BY_SLUG,
+	GET_PUBLICATION_INFO,
+	GET_SERIES_BY_SLUG,
 } from "./queries";
 import type {
-  Post,
-  Series,
-  PostsResponse,
-  PostResponse,
-  SeriesListResponse,
-  SeriesResponse,
-  PublicationResponse,
+	Post,
+	PostResponse,
+	PostsResponse,
+	PublicationResponse,
+	Series,
+	SeriesListResponse,
+	SeriesResponse,
 } from "./types";
 
 // ==================== Fonctions pour les Articles ====================
@@ -37,10 +37,15 @@ import type {
  * @returns Liste des articles triés par date de publication (plus récent en premier)
  */
 export async function getAllPosts(first: number = 50): Promise<Post[]> {
-  console.log('[Hashnode API] getAllPosts called with host:', HASHNODE_HOST, 'first:', first);
+	console.log(
+		"[Hashnode API] getAllPosts called with host:",
+		HASHNODE_HOST,
+		"first:",
+		first,
+	);
 
-  // Utiliser fetch natif au lieu de graphql-request pour debug
-  const query = `
+	// Utiliser fetch natif au lieu de graphql-request pour debug
+	const query = `
     query GetAllPosts($host: String!, $first: Int!) {
       publication(host: $host) {
         posts(first: $first) {
@@ -63,51 +68,62 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
     }
   `;
 
-  try {
-    const response = await fetch('https://gql.hashnode.com', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'User-Agent': 'Astro-Blog-Builder/1.0',
-      },
-      body: JSON.stringify({
-        query,
-        variables: { host: HASHNODE_HOST, first },
-      }),
-      cache: 'no-store',  // Force no caching in Node.js fetch
-    });
+	try {
+		const response = await fetch("https://gql.hashnode.com", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"Cache-Control": "no-cache, no-store, must-revalidate",
+				Pragma: "no-cache",
+				"User-Agent": "Astro-Blog-Builder/1.0",
+			},
+			body: JSON.stringify({
+				query,
+				variables: { host: HASHNODE_HOST, first },
+			}),
+			cache: "no-store", // Force no caching in Node.js fetch
+		});
 
-    console.log('[Hashnode API] Response status:', response.status);
+		console.log("[Hashnode API] Response status:", response.status);
 
-    const data = await response.json();
-    console.log('[Hashnode API] Response data:', JSON.stringify(data, null, 2).slice(0, 1000));
+		const data = await response.json();
+		console.log(
+			"[Hashnode API] Response data:",
+			JSON.stringify(data, null, 2).slice(0, 1000),
+		);
 
-    // Vérifier les erreurs GraphQL
-    if (data.errors) {
-      console.error('[Hashnode API] GraphQL errors:', JSON.stringify(data.errors));
-      return [];
-    }
+		// Vérifier les erreurs GraphQL
+		if (data.errors) {
+			console.error(
+				"[Hashnode API] GraphQL errors:",
+				JSON.stringify(data.errors),
+			);
+			return [];
+		}
 
-    // Vérifier que la publication existe
-    if (!data?.data?.publication) {
-      console.error('[Hashnode API] Publication not found for host:', HASHNODE_HOST);
-      return [];
-    }
+		// Vérifier que la publication existe
+		if (!data?.data?.publication) {
+			console.error(
+				"[Hashnode API] Publication not found for host:",
+				HASHNODE_HOST,
+			);
+			return [];
+		}
 
-    if (!data.data.publication.posts?.edges) {
-      console.error('[Hashnode API] No posts edges found');
-      return [];
-    }
+		if (!data.data.publication.posts?.edges) {
+			console.error("[Hashnode API] No posts edges found");
+			return [];
+		}
 
-    const posts = data.data.publication.posts.edges.map((edge: any) => edge.node);
-    console.log('[Hashnode API] Found', posts.length, 'posts');
-    return posts;
-  } catch (error) {
-    console.error("[Hashnode API] Error fetching posts:", error);
-    return [];
-  }
+		const posts = data.data.publication.posts.edges.map(
+			(edge: any) => edge.node,
+		);
+		console.log("[Hashnode API] Found", posts.length, "posts");
+		return posts;
+	} catch (error) {
+		console.error("[Hashnode API] Error fetching posts:", error);
+		return [];
+	}
 }
 
 /**
@@ -116,9 +132,14 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
  * @returns L'article ou null si non trouvé
  */
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  console.log('[Hashnode API] getPostBySlug called with slug:', slug, 'host:', HASHNODE_HOST);
+	console.log(
+		"[Hashnode API] getPostBySlug called with slug:",
+		slug,
+		"host:",
+		HASHNODE_HOST,
+	);
 
-  const query = `
+	const query = `
     query GetPost($host: String!, $slug: String!) {
       publication(host: $host) {
         post(slug: $slug) {
@@ -138,42 +159,56 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     }
   `;
 
-  // Timestamp pour forcer un cache-bust absolu
-  const timestamp = Date.now();
+	// Timestamp pour forcer un cache-bust absolu
+	const timestamp = Date.now();
 
-  try {
-    const response = await fetch('https://gql.hashnode.com', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'X-Request-Time': timestamp.toString(),
-        'User-Agent': `Astro-Blog-Builder/1.0 (${timestamp})`,
-      },
-      body: JSON.stringify({
-        query,
-        variables: { host: HASHNODE_HOST, slug },
-      }),
-      cache: 'no-store',
-    });
+	try {
+		const response = await fetch("https://gql.hashnode.com", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"Cache-Control": "no-cache, no-store, must-revalidate",
+				Pragma: "no-cache",
+				"X-Request-Time": timestamp.toString(),
+				"User-Agent": `Astro-Blog-Builder/1.0 (${timestamp})`,
+			},
+			body: JSON.stringify({
+				query,
+				variables: { host: HASHNODE_HOST, slug },
+			}),
+			cache: "no-store",
+		});
 
-    console.log('[Hashnode API] getPostBySlug response status:', response.status);
+		console.log(
+			"[Hashnode API] getPostBySlug response status:",
+			response.status,
+		);
 
-    const data = await response.json();
-    console.log('[Hashnode API] getPostBySlug raw response:', JSON.stringify(data).slice(0, 500));
-    console.log('[Hashnode API] getPostBySlug for', slug, ':', data?.data?.publication?.post ? 'FOUND' : 'NOT FOUND');
+		const data = await response.json();
+		console.log(
+			"[Hashnode API] getPostBySlug raw response:",
+			JSON.stringify(data).slice(0, 500),
+		);
+		console.log(
+			"[Hashnode API] getPostBySlug for",
+			slug,
+			":",
+			data?.data?.publication?.post ? "FOUND" : "NOT FOUND",
+		);
 
-    if (data.errors) {
-      console.error('[Hashnode API] GraphQL errors:', JSON.stringify(data.errors));
-      return null;
-    }
+		if (data.errors) {
+			console.error(
+				"[Hashnode API] GraphQL errors:",
+				JSON.stringify(data.errors),
+			);
+			return null;
+		}
 
-    return data?.data?.publication?.post || null;
-  } catch (error) {
-    console.error(`[Hashnode API] Error fetching post "${slug}":`, error);
-    return null;
-  }
+		return data?.data?.publication?.post || null;
+	} catch (error) {
+		console.error(`[Hashnode API] Error fetching post "${slug}":`, error);
+		return null;
+	}
 }
 
 /**
@@ -182,8 +217,8 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
  * @returns Liste des articles récents
  */
 export async function getRecentPosts(count: number = 5): Promise<Post[]> {
-  const posts = await getAllPosts(count);
-  return posts.slice(0, count);
+	const posts = await getAllPosts(count);
+	return posts.slice(0, count);
 }
 
 // ==================== Fonctions pour les Séries ====================
@@ -194,19 +229,73 @@ export async function getRecentPosts(count: number = 5): Promise<Post[]> {
  * @returns Liste des séries
  */
 export async function getAllSeries(first: number = 20): Promise<Series[]> {
-  const client = getClient();
+	console.log(
+		"[Hashnode API] getAllSeries called with host:",
+		HASHNODE_HOST,
+		"first:",
+		first,
+	);
 
-  try {
-    const data = await client.request<SeriesListResponse>(GET_ALL_SERIES, {
-      host: HASHNODE_HOST,
-      first,
-    });
+	// Requête inline (sans variables) pour éviter les problèmes de cache Stellate
+	const query = `{
+		publication(host: "${HASHNODE_HOST}") {
+			seriesList(first: ${first}) {
+				edges {
+					node {
+						id
+						name
+						slug
+						description { html text }
+						coverImage
+						posts(first: 1) { totalDocuments }
+					}
+				}
+			}
+		}
+	}`;
 
-    return data.publication.seriesList.edges.map((edge) => edge.node);
-  } catch (error) {
-    console.error("Erreur lors de la récupération des séries:", error);
-    return [];
-  }
+	try {
+		const response = await fetch("https://gql.hashnode.com", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ query }),
+		});
+
+		console.log(
+			"[Hashnode API] getAllSeries response status:",
+			response.status,
+		);
+
+		const data = await response.json();
+		console.log(
+			"[Hashnode API] getAllSeries response:",
+			JSON.stringify(data, null, 2).slice(0, 1000),
+		);
+
+		if (data.errors) {
+			console.error(
+				"[Hashnode API] GraphQL errors:",
+				JSON.stringify(data.errors),
+			);
+			return [];
+		}
+
+		if (!data?.data?.publication?.seriesList?.edges) {
+			console.error("[Hashnode API] No series found");
+			return [];
+		}
+
+		const series = data.data.publication.seriesList.edges.map(
+			(edge: any) => edge.node,
+		);
+		console.log("[Hashnode API] Found", series.length, "series");
+		return series;
+	} catch (error) {
+		console.error("[Hashnode API] Error fetching series:", error);
+		return [];
+	}
 }
 
 /**
@@ -215,19 +304,75 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
  * @returns La série avec ses articles ou null si non trouvée
  */
 export async function getSeriesBySlug(slug: string): Promise<Series | null> {
-  const client = getClient();
+	console.log(
+		"[Hashnode API] getSeriesBySlug called with slug:",
+		slug,
+		"host:",
+		HASHNODE_HOST,
+	);
 
-  try {
-    const data = await client.request<SeriesResponse>(GET_SERIES_BY_SLUG, {
-      host: HASHNODE_HOST,
-      slug,
-    });
+	// Requête inline (sans variables) pour éviter les problèmes de cache Stellate
+	const query = `{
+		publication(host: "${HASHNODE_HOST}") {
+			series(slug: "${slug}") {
+				id
+				name
+				slug
+				description { html text }
+				coverImage
+				posts(first: 20) {
+					totalDocuments
+					edges {
+						node {
+							id
+							title
+							slug
+							brief
+							publishedAt
+							readTimeInMinutes
+							coverImage { url }
+						}
+					}
+				}
+			}
+		}
+	}`;
 
-    return data.publication.series;
-  } catch (error) {
-    console.error(`Erreur lors de la récupération de la série "${slug}":`, error);
-    return null;
-  }
+	try {
+		const response = await fetch("https://gql.hashnode.com", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ query }),
+		});
+
+		console.log(
+			"[Hashnode API] getSeriesBySlug response status:",
+			response.status,
+		);
+
+		const data = await response.json();
+		console.log(
+			"[Hashnode API] getSeriesBySlug for",
+			slug,
+			":",
+			data?.data?.publication?.series ? "FOUND" : "NOT FOUND",
+		);
+
+		if (data.errors) {
+			console.error(
+				"[Hashnode API] GraphQL errors:",
+				JSON.stringify(data.errors),
+			);
+			return null;
+		}
+
+		return data?.data?.publication?.series || null;
+	} catch (error) {
+		console.error(`[Hashnode API] Error fetching series "${slug}":`, error);
+		return null;
+	}
 }
 
 /**
@@ -236,8 +381,8 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
  * @returns Liste des séries en vedette
  */
 export async function getFeaturedSeries(count: number = 2): Promise<Series[]> {
-  const series = await getAllSeries(count);
-  return series.slice(0, count);
+	const series = await getAllSeries(count);
+	return series.slice(0, count);
 }
 
 // ==================== Fonctions pour la Publication ====================
@@ -247,18 +392,21 @@ export async function getFeaturedSeries(count: number = 2): Promise<Series[]> {
  * @returns Informations de la publication
  */
 export async function getPublicationInfo() {
-  const client = getClient();
+	const client = getClient();
 
-  try {
-    const data = await client.request<PublicationResponse>(GET_PUBLICATION_INFO, {
-      host: HASHNODE_HOST,
-    });
+	try {
+		const data = await client.request<PublicationResponse>(
+			GET_PUBLICATION_INFO,
+			{
+				host: HASHNODE_HOST,
+			},
+		);
 
-    return data.publication;
-  } catch (error) {
-    console.error("Erreur lors de la récupération des infos du blog:", error);
-    return null;
-  }
+		return data.publication;
+	} catch (error) {
+		console.error("Erreur lors de la récupération des infos du blog:", error);
+		return null;
+	}
 }
 
 // ==================== Utilitaires ====================
@@ -267,9 +415,9 @@ export async function getPublicationInfo() {
  * Type pour les headings extraits du HTML (compatible avec Astro MarkdownHeading)
  */
 export interface ExtractedHeading {
-  depth: number;
-  slug: string;
-  text: string;
+	depth: number;
+	slug: string;
+	text: string;
 }
 
 /**
@@ -278,39 +426,40 @@ export interface ExtractedHeading {
  * @returns Liste des headings avec leur profondeur, slug et texte
  */
 export function extractHeadingsFromHtml(html: string): ExtractedHeading[] {
-  if (!html) return [];
+	if (!html) return [];
 
-  const headings: ExtractedHeading[] = [];
+	const headings: ExtractedHeading[] = [];
 
-  // Regex pour trouver les balises h2-h6 avec leur contenu
-  // Capture: le niveau (2-6), l'id optionnel, et le texte
-  const headingRegex = /<h([2-6])(?:[^>]*id=["']([^"']+)["'])?[^>]*>(.*?)<\/h\1>/gi;
+	// Regex pour trouver les balises h2-h6 avec leur contenu
+	// Capture: le niveau (2-6), l'id optionnel, et le texte
+	const headingRegex =
+		/<h([2-6])(?:[^>]*id=["']([^"']+)["'])?[^>]*>(.*?)<\/h\1>/gi;
 
-  let match;
-  while ((match = headingRegex.exec(html)) !== null) {
-    const depth = parseInt(match[1], 10);
-    let id = match[2] || '';
-    const rawText = match[3];
+	let match;
+	while ((match = headingRegex.exec(html)) !== null) {
+		const depth = parseInt(match[1], 10);
+		let id = match[2] || "";
+		const rawText = match[3];
 
-    // Nettoyer le texte HTML (enlever les balises internes)
-    const text = rawText.replace(/<[^>]+>/g, '').trim();
+		// Nettoyer le texte HTML (enlever les balises internes)
+		const text = rawText.replace(/<[^>]+>/g, "").trim();
 
-    // Si pas d'id, générer un slug à partir du texte
-    if (!id) {
-      id = text
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .trim();
-    }
+		// Si pas d'id, générer un slug à partir du texte
+		if (!id) {
+			id = text
+				.toLowerCase()
+				.replace(/[^\w\s-]/g, "")
+				.replace(/\s+/g, "-")
+				.replace(/-+/g, "-")
+				.trim();
+		}
 
-    if (text) {
-      headings.push({ depth, slug: id, text });
-    }
-  }
+		if (text) {
+			headings.push({ depth, slug: id, text });
+		}
+	}
 
-  return headings;
+	return headings;
 }
 
 /**
@@ -319,12 +468,12 @@ export function extractHeadingsFromHtml(html: string): ExtractedHeading[] {
  * @returns Date formatée (ex: "6 janvier 2026")
  */
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("fr-FR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+	const date = new Date(dateString);
+	return date.toLocaleDateString("fr-FR", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
 }
 
 /**
@@ -333,13 +482,13 @@ export function formatDate(dateString: string): string {
  * @returns Liste des articles de la série
  */
 export async function getPostsBySeries(seriesSlug: string): Promise<Post[]> {
-  const series = await getSeriesBySlug(seriesSlug);
+	const series = await getSeriesBySlug(seriesSlug);
 
-  if (!series || !series.posts?.edges) {
-    return [];
-  }
+	if (!series || !series.posts?.edges) {
+		return [];
+	}
 
-  return series.posts.edges.map((edge) => edge.node);
+	return series.posts.edges.map((edge) => edge.node);
 }
 
 /**
@@ -348,20 +497,21 @@ export async function getPostsBySeries(seriesSlug: string): Promise<Post[]> {
  * @returns { older: Post | null, newer: Post | null }
  */
 export async function getAdjacentPosts(currentSlug: string): Promise<{
-  older: Post | null;
-  newer: Post | null;
+	older: Post | null;
+	newer: Post | null;
 }> {
-  const allPosts = await getAllPosts(50); // Tous les articles triés par date (max 50 selon API Hashnode)
-  const currentIndex = allPosts.findIndex(post => post.slug === currentSlug);
+	const allPosts = await getAllPosts(50); // Tous les articles triés par date (max 50 selon API Hashnode)
+	const currentIndex = allPosts.findIndex((post) => post.slug === currentSlug);
 
-  if (currentIndex === -1) {
-    return { older: null, newer: null };
-  }
+	if (currentIndex === -1) {
+		return { older: null, newer: null };
+	}
 
-  return {
-    // newer = article plus récent (index inférieur dans le tableau)
-    newer: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
-    // older = article plus ancien (index supérieur dans le tableau)
-    older: currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null,
-  };
+	return {
+		// newer = article plus récent (index inférieur dans le tableau)
+		newer: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
+		// older = article plus ancien (index supérieur dans le tableau)
+		older:
+			currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null,
+	};
 }
