@@ -3,7 +3,7 @@ import type { IconMap, SocialLink, Site } from '@/types'
 export const SITE: Site = {
   title: 'The Learning Machine',
   description:
-    'A collection of notes, essays, and technical deep dives.',
+    'The Learning Machine is a collection of notes, essays, and technical deep dives.',
   href: 'https://thelearningmachine.dev',
   author: 'Bastien Mirlicourtois',
   locale: 'en-US',
