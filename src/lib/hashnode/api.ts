@@ -44,29 +44,32 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
 		first,
 	);
 
-	// Utiliser fetch natif au lieu de graphql-request pour debug
-	const query = `
-    query GetAllPosts($host: String!, $first: Int!) {
-      publication(host: $host) {
-        posts(first: $first) {
-          edges {
-            node {
-              id
-              title
-              slug
-              brief
-              publishedAt
-              readTimeInMinutes
-              coverImage { url }
-              author { name profilePicture }
-              tags { name slug }
-              series { name slug }
-            }
-          }
-        }
-      }
-    }
-  `;
+	// Requête inline (sans variables) pour éviter les problèmes de cache Stellate
+	// Ajout d'un timestamp pour forcer le bypass du cache
+	const timestamp = Date.now();
+	const query = `# cache-bust: ${timestamp}
+{
+		publication(host: "${HASHNODE_HOST}") {
+			posts(first: ${first}) {
+				edges {
+					node {
+						id
+						title
+						slug
+						brief
+						publishedAt
+						readTimeInMinutes
+						coverImage { url }
+						author { name profilePicture }
+						tags { name slug }
+						series { name slug }
+					}
+				}
+			}
+		}
+	}`;
+	console.log("[Hashnode API] Query timestamp:", timestamp);
+	console.log("[Hashnode API] Query:", query.substring(0, 100));
 
 	try {
 		const response = await fetch("https://gql.hashnode.com", {
@@ -75,13 +78,9 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
 				"Content-Type": "application/json",
 				"Cache-Control": "no-cache, no-store, must-revalidate",
 				Pragma: "no-cache",
-				"User-Agent": "Astro-Blog-Builder/1.0",
 			},
-			body: JSON.stringify({
-				query,
-				variables: { host: HASHNODE_HOST, first },
-			}),
-			cache: "no-store", // Force no caching in Node.js fetch
+			body: JSON.stringify({ query }),
+			cache: "no-store",
 		});
 
 		console.log("[Hashnode API] Response status:", response.status);
@@ -217,7 +216,8 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
  * @returns Liste des articles récents
  */
 export async function getRecentPosts(count: number = 5): Promise<Post[]> {
-	const posts = await getAllPosts(count);
+	// Toujours fetch 50 pour éviter les problèmes de cache Stellate avec petites valeurs
+	const posts = await getAllPosts(50);
 	return posts.slice(0, count);
 }
 
@@ -237,7 +237,9 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 	);
 
 	// Requête inline (sans variables) pour éviter les problèmes de cache Stellate
-	const query = `{
+	const timestamp = Date.now();
+	const query = `# cache-bust: ${timestamp}
+{
 		publication(host: "${HASHNODE_HOST}") {
 			seriesList(first: ${first}) {
 				edges {
@@ -247,7 +249,19 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 						slug
 						description { html text }
 						coverImage
-						posts(first: 1) { totalDocuments }
+						posts(first: 20) {
+							totalDocuments
+							edges {
+								node {
+									id
+									title
+									slug
+									brief
+									publishedAt
+									readTimeInMinutes
+								}
+							}
+						}
 					}
 				}
 			}
@@ -259,8 +273,11 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				"Cache-Control": "no-cache, no-store, must-revalidate",
+				Pragma: "no-cache",
 			},
 			body: JSON.stringify({ query }),
+			cache: "no-store",
 		});
 
 		console.log(
@@ -343,8 +360,11 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				"Cache-Control": "no-cache, no-store, must-revalidate",
+				Pragma: "no-cache",
 			},
 			body: JSON.stringify({ query }),
+			cache: "no-store",
 		});
 
 		console.log(
@@ -381,7 +401,8 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
  * @returns Liste des séries en vedette
  */
 export async function getFeaturedSeries(count: number = 2): Promise<Series[]> {
-	const series = await getAllSeries(count);
+	// Toujours fetch 20 pour éviter les problèmes de cache Stellate avec petites valeurs
+	const series = await getAllSeries(20);
 	return series.slice(0, count);
 }
 
