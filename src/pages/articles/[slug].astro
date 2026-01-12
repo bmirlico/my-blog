@@ -12,6 +12,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import PostNavigation from '@/components/PostNavigation.astro'
+import SeriesNavCard from '@/components/SeriesNavCard.astro'
 import TOCHeader from '@/components/TOCHeader.astro'
 import TOCSidebar from '@/components/TOCSidebar.astro'
 import { badgeVariants } from '@/components/ui/badge'
@@ -19,8 +20,8 @@ import Layout from '@/layouts/Layout.astro'
 import { Icon } from 'astro-icon/components'
 
 // Import des fonctions API Hashnode
-import { getAllPosts, getPostBySlug, formatDate, extractHeadingsFromHtml, getAdjacentPosts } from '@/lib/hashnode/api'
-import type { Post } from '@/lib/hashnode/types'
+import { getAllPosts, getPostBySlug, getSeriesBySlug, formatDate, extractHeadingsFromHtml, getAdjacentPosts } from '@/lib/hashnode/api'
+import type { Post, Series } from '@/lib/hashnode/types'
 
 // Génère toutes les routes possibles au moment du build
 export async function getStaticPaths() {
@@ -53,6 +54,16 @@ try {
 
 // Récupère les articles adjacents pour la navigation Previous/Next
 const { older, newer } = await getAdjacentPosts(slug as string)
+
+// Récupère les données complètes de la série si l'article appartient à une série
+let seriesData: Series | null = null
+if (post?.series?.slug) {
+  try {
+    seriesData = await getSeriesBySlug(post.series.slug)
+  } catch (error) {
+    console.error(`Erreur lors de la récupération de la série "${post.series.slug}":`, error)
+  }
+}
 
 // Formatage de la date
 const publishedDate = post ? formatDate(post.publishedAt) : ''
@@ -170,6 +181,17 @@ const breadcrumbItems = [
             <Fragment set:html={post.content.html} />
           ) : (
             <p class="text-muted-foreground">Contenu non disponible.</p>
+          )}
+
+          <!-- Carte de navigation de série (uniquement si l'article appartient à une série) -->
+          {seriesData && seriesData.posts?.edges && (
+            <SeriesNavCard
+              seriesName={seriesData.name}
+              seriesSlug={seriesData.slug}
+              seriesDescription={seriesData.description?.text}
+              posts={seriesData.posts.edges.map(edge => edge.node)}
+              currentSlug={slug as string}
+            />
           )}
         </article>
       </div>

@@ -1,0 +1,119 @@
+---
+/**
+ * SeriesNavCard - Carte de navigation de série sur les pages article
+ *
+ * Affiche la série à laquelle appartient l'article avec :
+ * - Titre et description de la série
+ * - Liste de tous les articles de la série
+ * - Indicateur "Current" pour l'article actuel
+ * - Lien "Next" vers l'article suivant
+ */
+
+import Link from './Link.astro'
+import { Icon } from 'astro-icon/components'
+import { formatDate } from '@/lib/hashnode/api'
+
+interface SeriesPost {
+  id: string
+  title: string
+  slug: string
+  publishedAt?: string
+}
+
+interface Props {
+  seriesName: string
+  seriesSlug: string
+  seriesDescription?: string
+  posts: SeriesPost[]
+  currentSlug: string
+}
+
+const { seriesName, seriesSlug, seriesDescription, posts, currentSlug } = Astro.props
+
+// Trouver l'index de l'article actuel et l'article suivant
+const currentIndex = posts.findIndex(p => p.slug === currentSlug)
+const nextPost = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
+---
+
+<aside class="rounded-lg border border-border bg-card p-6 my-8">
+  <!-- Header: SERIES badge -->
+  <div class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+    <Icon name="lucide:layers" class="size-4" />
+    <span>Series</span>
+  </div>
+
+  <!-- Titre de la série -->
+  <h3 class="text-2xl font-serif font-bold mb-2">
+    <Link href={`/series/${seriesSlug}`} class="hover:text-primary transition-colors">
+      {seriesName}
+    </Link>
+  </h3>
+
+  <!-- Description -->
+  {seriesDescription && (
+    <p class="text-muted-foreground mb-4">
+      {seriesDescription}
+    </p>
+  )}
+
+  <!-- Séparateur -->
+  <div class="border-t border-border my-4" />
+
+  <!-- Liste des articles -->
+  <div class="space-y-3">
+    {posts.map((post, index) => {
+      const partNumber = String(index + 1).padStart(2, '0')
+      const isCurrent = post.slug === currentSlug
+
+      return (
+        <div class="flex items-start gap-4">
+          <!-- Numéro -->
+          <span class={`text-sm font-medium shrink-0 ${isCurrent ? 'text-foreground' : 'text-muted-foreground'}`}>
+            {partNumber}
+          </span>
+
+          <!-- Titre + Date -->
+          <div class="flex-1 min-w-0">
+            {isCurrent ? (
+              <span class="font-semibold">{post.title}</span>
+            ) : (
+              <Link
+                href={`/articles/${post.slug}`}
+                class="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {post.title}
+              </Link>
+            )}
+            {post.publishedAt && (
+              <div class="text-xs text-muted-foreground mt-0.5">
+                {formatDate(post.publishedAt)}
+              </div>
+            )}
+          </div>
+
+          <!-- Badge Current -->
+          {isCurrent && (
+            <span class="shrink-0 text-xs font-medium px-2 py-1 rounded bg-foreground text-background">
+              Current
+            </span>
+          )}
+        </div>
+      )
+    })}
+  </div>
+
+  <!-- Lien Next -->
+  {nextPost && (
+    <>
+      <div class="border-t border-border my-4" />
+      <Link
+        href={`/articles/${nextPost.slug}`}
+        class="flex items-center gap-2 font-medium hover:text-primary transition-colors"
+      >
+        <span>Next:</span>
+        <span>{nextPost.title}</span>
+        <Icon name="lucide:arrow-right" class="size-4" />
+      </Link>
+    </>
+  )}
+</aside>
