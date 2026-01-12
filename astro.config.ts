@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config'
 import mdx from '@astrojs/mdx'
 import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
+import vercel from '@astrojs/vercel'
 import icon from 'astro-icon'
 
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
@@ -20,7 +21,9 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   site: 'https://thelearningmachine.dev',
-  // Static output - API routes are handled by Cloudflare Pages Functions in /functions folder
+  // Server mode for API routes
+  output: 'server',
+  adapter: vercel(),
   integrations: [
     expressiveCode({
       themes: ['github-light', 'github-dark'],
