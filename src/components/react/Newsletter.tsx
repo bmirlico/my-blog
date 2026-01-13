@@ -62,7 +62,7 @@ const Newsletter: React.FC<NewsletterProps> = ({ className }) => {
       }
 
       setStatus('success')
-      setMessage('Successfully subscribed! Please check your email to confirm.')
+      setMessage(data.message || 'Successfully subscribed! Please check your email to confirm.')
       setEmail('')
       setConsent(false)
       
