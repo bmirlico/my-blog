@@ -1,5 +1,5 @@
-import type { APIRoute } from "astro";
 import { createHmac } from "node:crypto";
+import type { APIRoute } from "astro";
 
 // Hashnode webhook payload types (real format from Hashnode)
 interface HashnodeWebhookPayload {
@@ -86,7 +86,11 @@ async function getProcessedTemplate(
 	brevoApiKey: string,
 	templateId: number,
 	params: Record<string, string>,
-): Promise<{ htmlContent: string; subject: string; sender: { name: string; email: string } }> {
+): Promise<{
+	htmlContent: string;
+	subject: string;
+	sender: { name: string; email: string };
+}> {
 	const templateResponse = await fetch(
 		`https://api.brevo.com/v3/smtp/templates/${templateId}`,
 		{
@@ -144,7 +148,12 @@ export const POST: APIRoute = async ({ request }) => {
 		const eventType = payload.data.eventType;
 		const postId = payload.data.post.id;
 
-		console.log("[Newsletter Notify] Received webhook:", eventType, "postId:", postId);
+		console.log(
+			"[Newsletter Notify] Received webhook:",
+			eventType,
+			"postId:",
+			postId,
+		);
 
 		// Only process post_published events
 		if (eventType !== "post_published") {
@@ -159,11 +168,17 @@ export const POST: APIRoute = async ({ request }) => {
 		const post = await fetchPostById(postId);
 
 		if (!post || !post.title || !post.slug) {
-			console.error("[Newsletter Notify] Could not fetch post details for ID:", postId);
-			return new Response(JSON.stringify({ error: "Could not fetch post details" }), {
-				status: 400,
-				headers: { "Content-Type": "application/json" },
-			});
+			console.error(
+				"[Newsletter Notify] Could not fetch post details for ID:",
+				postId,
+			);
+			return new Response(
+				JSON.stringify({ error: "Could not fetch post details" }),
+				{
+					status: 400,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
 		}
 
 		console.log("[Newsletter Notify] Post details fetched:", post.title);
@@ -195,7 +210,11 @@ export const POST: APIRoute = async ({ request }) => {
 
 		// Fetch and process template (includes sender info)
 		console.log("[Newsletter Notify] Fetching template:", templateId);
-		const template = await getProcessedTemplate(brevoApiKey, templateId, templateParams);
+		const template = await getProcessedTemplate(
+			brevoApiKey,
+			templateId,
+			templateParams,
+		);
 
 		// Schedule campaign 4 minutes from now (to allow Vercel build to complete)
 		const scheduledAt = new Date(Date.now() + 4 * 60 * 1000);
@@ -212,28 +231,43 @@ export const POST: APIRoute = async ({ request }) => {
 			scheduledAt: scheduledAt.toISOString(),
 		};
 
-		console.log("[Newsletter Notify] Creating campaign scheduled for:", scheduledAt.toISOString());
+		console.log(
+			"[Newsletter Notify] Creating campaign scheduled for:",
+			scheduledAt.toISOString(),
+		);
 
-		const campaignResponse = await fetch("https://api.brevo.com/v3/emailCampaigns", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"api-key": brevoApiKey,
+		const campaignResponse = await fetch(
+			"https://api.brevo.com/v3/emailCampaigns",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"api-key": brevoApiKey,
+				},
+				body: JSON.stringify(campaignData),
 			},
-			body: JSON.stringify(campaignData),
-		});
+		);
 
 		if (!campaignResponse.ok) {
 			const errorData = await campaignResponse.json().catch(() => ({}));
-			console.error("[Newsletter Notify] Failed to create campaign:", errorData);
+			console.error(
+				"[Newsletter Notify] Failed to create campaign:",
+				errorData,
+			);
 			return new Response(
-				JSON.stringify({ error: "Failed to create campaign", details: errorData }),
+				JSON.stringify({
+					error: "Failed to create campaign",
+					details: errorData,
+				}),
 				{ status: 500, headers: { "Content-Type": "application/json" } },
 			);
 		}
 
 		const campaignResult = await campaignResponse.json();
-		console.log("[Newsletter Notify] Campaign created successfully:", campaignResult.id);
+		console.log(
+			"[Newsletter Notify] Campaign created successfully:",
+			campaignResult.id,
+		);
 
 		return new Response(
 			JSON.stringify({
@@ -249,7 +283,10 @@ export const POST: APIRoute = async ({ request }) => {
 		console.error("[Newsletter Notify] Error:", error);
 		return new Response(
 			JSON.stringify({
-				error: error instanceof Error ? error.message : "An unexpected error occurred",
+				error:
+					error instanceof Error
+						? error.message
+						: "An unexpected error occurred",
 			}),
 			{ status: 500, headers: { "Content-Type": "application/json" } },
 		);
