@@ -49,6 +49,12 @@ const websiteSchema = {
 	url: SITE.href,
 	description: SITE.description,
 };
+
+// ISR: Cache 60s sur Vercel, stale-while-revalidate 5min
+Astro.response.headers.set(
+	"Cache-Control",
+	"s-maxage=60, stale-while-revalidate=300",
+);
 ---
 
 <Layout class="max-w-3xl">

@@ -1,5 +1,6 @@
 dist/
 .astro/
+.vercel/
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -17,3 +18,4 @@ teaser.pptx
 *FIXES*.md
 *REVIEW*.md
 *CHECKLIST*.md
+TODO.md

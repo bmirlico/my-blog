@@ -44,11 +44,9 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
 		first,
 	);
 
-	// Query nommée avec timestamp pour bypasser le cache Stellate
-	// Stellate cache basé sur le texte de la query - un nom unique = pas de cache
-	const timestamp = Date.now();
+	// Query statique - ISR côté Vercel gère la fraîcheur des données
 	const query = `
-query GetAllPosts_${timestamp} {
+query GetAllPosts {
 	publication(host: "${HASHNODE_HOST}") {
 		posts(first: ${first}) {
 				edges {
@@ -68,8 +66,6 @@ query GetAllPosts_${timestamp} {
 			}
 		}
 	}`;
-	console.log("[Hashnode API] Query timestamp:", timestamp);
-	console.log("[Hashnode API] Query:", query.substring(0, 100));
 
 	try {
 		const response = await fetch("https://gql.hashnode.com", {
@@ -236,10 +232,9 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 		first,
 	);
 
-	// Query nommée avec timestamp pour bypasser le cache Stellate
-	const timestamp = Date.now();
+	// Query statique - ISR côté Vercel gère la fraîcheur des données
 	const query = `
-query GetAllSeries_${timestamp} {
+query GetAllSeries {
 	publication(host: "${HASHNODE_HOST}") {
 		seriesList(first: ${first}) {
 				edges {
