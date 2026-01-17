@@ -1,37 +1,84 @@
 import type { APIRoute } from "astro";
 import { createHmac } from "node:crypto";
 
-// Hashnode webhook payload types
+// Hashnode webhook payload types (real format from Hashnode)
 interface HashnodeWebhookPayload {
-	event: "post_published" | "post_updated" | "post_deleted";
-	post: {
-		id: string;
-		title: string;
-		slug: string;
-		brief: string;
-		url: string;
-		coverImage?: {
-			url: string;
-		};
-		author: {
-			name: string;
-		};
-		publication: {
-			id: string;
-		};
+	metadata: { uuid: string };
+	data: {
+		publication: { id: string };
+		post: { id: string };
+		eventType: "post_published" | "post_updated" | "post_deleted";
 	};
 }
 
+// Post details fetched from GraphQL
+interface PostDetails {
+	id: string;
+	title: string;
+	slug: string;
+	brief: string;
+	coverImage?: { url: string };
+}
+
 // Verify Hashnode webhook signature
+// Format: "t=1234567890,v1=abc123..."
 function verifyHashnodeSignature(
 	payload: string,
-	signature: string,
+	signatureHeader: string,
 	secret: string,
 ): boolean {
+	// Parse "t=timestamp,v1=signature"
+	const parts = signatureHeader.split(",");
+	const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
+	const signature = parts.find((p) => p.startsWith("v1="))?.slice(3);
+
+	if (!timestamp || !signature) {
+		console.error("[Newsletter Notify] Invalid signature format");
+		return false;
+	}
+
+	// Signed payload = "timestamp.body"
+	const signedPayload = `${timestamp}.${payload}`;
 	const expectedSignature = createHmac("sha256", secret)
-		.update(payload)
+		.update(signedPayload)
 		.digest("hex");
+
 	return signature === expectedSignature;
+}
+
+// Fetch post details from Hashnode GraphQL API
+async function fetchPostById(postId: string): Promise<PostDetails | null> {
+	const query = `
+		query GetPostById($id: ObjectId!) {
+			post(id: $id) {
+				id
+				title
+				slug
+				brief
+				coverImage { url }
+			}
+		}
+	`;
+
+	try {
+		const response = await fetch("https://gql.hashnode.com", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ query, variables: { id: postId } }),
+		});
+
+		const data = await response.json();
+
+		if (data.errors) {
+			console.error("[Newsletter Notify] GraphQL errors:", data.errors);
+			return null;
+		}
+
+		return data?.data?.post || null;
+	} catch (error) {
+		console.error("[Newsletter Notify] Error fetching post:", error);
+		return null;
+	}
 }
 
 // Fetch template from Brevo and replace placeholders
@@ -92,32 +139,34 @@ export const POST: APIRoute = async ({ request }) => {
 			}
 		}
 
-		// Parse webhook payload
+		// Parse webhook payload (Hashnode real format)
 		const payload: HashnodeWebhookPayload = JSON.parse(rawBody);
+		const eventType = payload.data.eventType;
+		const postId = payload.data.post.id;
 
-		console.log(
-			"[Newsletter Notify] Received webhook:",
-			payload.event,
-			payload.post?.title,
-		);
+		console.log("[Newsletter Notify] Received webhook:", eventType, "postId:", postId);
 
 		// Only process post_published events
-		if (payload.event !== "post_published") {
-			console.log("[Newsletter Notify] Ignoring event:", payload.event);
+		if (eventType !== "post_published") {
+			console.log("[Newsletter Notify] Ignoring event:", eventType);
 			return new Response(
-				JSON.stringify({ message: "Event ignored", event: payload.event }),
+				JSON.stringify({ message: "Event ignored", event: eventType }),
 				{ status: 200, headers: { "Content-Type": "application/json" } },
 			);
 		}
 
-		// Validate payload
-		if (!payload.post?.title || !payload.post?.slug) {
-			console.error("[Newsletter Notify] Invalid payload - missing title or slug");
-			return new Response(JSON.stringify({ error: "Invalid payload" }), {
+		// Fetch post details from Hashnode GraphQL API
+		const post = await fetchPostById(postId);
+
+		if (!post || !post.title || !post.slug) {
+			console.error("[Newsletter Notify] Could not fetch post details for ID:", postId);
+			return new Response(JSON.stringify({ error: "Could not fetch post details" }), {
 				status: 400,
 				headers: { "Content-Type": "application/json" },
 			});
 		}
+
+		console.log("[Newsletter Notify] Post details fetched:", post.title);
 
 		// Get Brevo configuration
 		const brevoApiKey = import.meta.env.BREVO_API_KEY;
@@ -136,12 +185,12 @@ export const POST: APIRoute = async ({ request }) => {
 		const templateId = Number.parseInt(brevoTemplateId, 10);
 
 		// Prepare template parameters
-		const articleUrl = `https://thelearningmachine.dev/articles/${payload.post.slug}`;
+		const articleUrl = `https://thelearningmachine.dev/articles/${post.slug}`;
 		const templateParams: Record<string, string> = {
-			title: payload.post.title,
-			brief: payload.post.brief || "",
+			title: post.title,
+			brief: post.brief || "",
 			articleUrl: articleUrl,
-			coverImageUrl: payload.post.coverImage?.url || "",
+			coverImageUrl: post.coverImage?.url || "",
 		};
 
 		// Fetch and process template (includes sender info)
@@ -153,7 +202,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 		// Create campaign via Brevo API
 		const campaignData = {
-			name: `New Post: ${payload.post.title} - ${Date.now()}`,
+			name: `New Post: ${post.title} - ${Date.now()}`,
 			subject: template.subject,
 			sender: template.sender,
 			htmlContent: template.htmlContent,
@@ -192,7 +241,7 @@ export const POST: APIRoute = async ({ request }) => {
 				message: "Newsletter scheduled",
 				campaignId: campaignResult.id,
 				scheduledAt: scheduledAt.toISOString(),
-				articleTitle: payload.post.title,
+				articleTitle: post.title,
 			}),
 			{ status: 200, headers: { "Content-Type": "application/json" } },
 		);
