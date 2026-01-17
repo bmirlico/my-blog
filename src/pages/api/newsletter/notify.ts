@@ -16,6 +16,7 @@ interface PostDetails {
 	id: string;
 	title: string;
 	slug: string;
+	subtitle?: string;
 	brief: string;
 	coverImage?: { url: string };
 }
@@ -54,6 +55,7 @@ async function fetchPostById(postId: string): Promise<PostDetails | null> {
 				id
 				title
 				slug
+				subtitle
 				brief
 				coverImage { url }
 			}
@@ -203,6 +205,7 @@ export const POST: APIRoute = async ({ request }) => {
 		const articleUrl = `https://thelearningmachine.dev/articles/${post.slug}`;
 		const templateParams: Record<string, string> = {
 			title: post.title,
+			subtitle: post.subtitle || "",
 			brief: post.brief || "",
 			articleUrl: articleUrl,
 			coverImageUrl: post.coverImage?.url || "",
