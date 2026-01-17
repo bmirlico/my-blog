@@ -1,47 +1,43 @@
 ---
 /**
- * Page Home
+ * Home Page
  *
- * Page d'accueil du blog avec :
- * - Section Hero (titre + description)
- * - Featured Series (séries mises en avant)
- * - Latest Articles (derniers articles)
+ * Blog homepage with:
+ * - Hero Section (title + description)
+ * - Featured Series
+ * - Latest Articles
  *
- * Les données viennent de Hashnode via les fonctions API.
+ * Data comes from Hashnode via API functions.
  */
 
 import ArticleCard from "@/components/ArticleCard.astro";
 import SeriesCard from "@/components/SeriesCard.astro";
 import Link from "@/components/Link.astro";
 import PageHead from "@/components/PageHead.astro";
-import { buttonVariants } from "@/components/ui/button";
 import Layout from "@/layouts/Layout.astro";
 import { Icon } from "astro-icon/components";
 import { SITE } from "@/consts";
 
-// Import des fonctions API Hashnode
 import { getFeaturedSeries, getRecentPosts } from "@/lib/hashnode/api";
 import type { Post, Series } from "@/lib/hashnode/types";
 
-// Récupération des données depuis Hashnode
+// Fetch data from Hashnode
 let featuredSeries: Series[] = [];
 let latestPosts: Post[] = [];
 
 try {
-	// Récupère les 2 premières séries (featured)
 	featuredSeries = await getFeaturedSeries(2);
 } catch (error) {
-	console.error("Erreur lors de la récupération des séries:", error);
+	console.error("Error fetching series:", error);
 }
 
 try {
-	// Récupère les 5 derniers articles
 	latestPosts = await getRecentPosts(5);
 } catch (error) {
-	console.error("Erreur lors de la récupération des articles:", error);
+	console.error("Error fetching articles:", error);
 }
 
-// Schema SEO pour la page d'accueil
+// SEO schema for homepage
 const websiteSchema = {
 	"@context": "https://schema.org",
 	"@type": "WebSite",
@@ -50,7 +46,7 @@ const websiteSchema = {
 	description: SITE.description,
 };
 
-// ISR: Cache 60s sur Vercel, stale-while-revalidate 5min
+// ISR: Cache 60s on Vercel, stale-while-revalidate 5min
 Astro.response.headers.set(
 	"Cache-Control",
 	"s-maxage=60, stale-while-revalidate=300",
@@ -132,22 +128,12 @@ Astro.response.headers.set(
     </section>
   )}
 
-  <!-- Message si pas de contenu -->
+  <!-- Empty state -->
   {featuredSeries.length === 0 && latestPosts.length === 0 && (
-    <section class="mt-12 text-center py-12 border border-dashed border-border rounded-lg">
-      <Icon name="lucide:file-text" class="size-12 text-muted-foreground/50 mx-auto mb-4" />
-      <h2 class="text-lg font-semibold mb-2">Pas encore de contenu</h2>
-      <p class="text-muted-foreground mb-4">
-        Commence par publier des articles sur Hashnode pour les voir apparaitre ici.
+    <section class="mt-12 text-center py-12">
+      <p class="text-xl text-muted-foreground">
+        No content yet! Soon to come 🚀
       </p>
-      <Link
-        href="https://hashnode.com"
-        class={buttonVariants({ variant: 'outline' })}
-        external
-      >
-        Aller sur Hashnode
-        <Icon name="lucide:external-link" class="size-4 ml-2" />
-      </Link>
     </section>
   )}
 </Layout>

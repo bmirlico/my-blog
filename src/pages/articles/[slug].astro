@@ -1,11 +1,11 @@
 ---
 /**
- * Page Article individuel - Détail d'un article
+ * Individual Article Page - Article detail
  *
- * Route dynamique : /articles/[slug]
+ * Dynamic route: /articles/[slug]
  *
- * Adapté du template original astro-erudite pour Hashnode.
- * Layout: TOC à gauche, contenu à droite (comme le template original)
+ * Adapted from the original astro-erudite template for Hashnode.
+ * Layout: TOC on left, content on right (like original template)
  */
 
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
@@ -19,7 +19,6 @@ import { badgeVariants } from "@/components/ui/badge";
 import Layout from "@/layouts/Layout.astro";
 import { Icon } from "astro-icon/components";
 
-// Import des fonctions API Hashnode
 import {
 	getAllPosts,
 	getPostBySlug,
@@ -30,9 +29,9 @@ import {
 } from "@/lib/hashnode/api";
 import type { Post, Series } from "@/lib/hashnode/types";
 
-// Génère toutes les routes possibles au moment du build
+// Generate all possible routes at build time
 export async function getStaticPaths() {
-	const allPosts = await getAllPosts(50); // Limite API: 50 max
+	const allPosts = await getAllPosts(50);
 
 	return allPosts.map((post) => ({
 		params: { slug: post.slug },
@@ -43,13 +42,13 @@ export async function getStaticPaths() {
 const { slug } = Astro.params;
 const { post: initialPost } = Astro.props as { post: Post };
 
-// Récupère les détails complets de l'article (avec le contenu HTML)
+// Fetch complete article details (with HTML content)
 let post: Post | null = null;
 
 try {
 	post = await getPostBySlug(slug as string);
 
-	// Si getPostBySlug retourne null, utiliser initialPost comme fallback
+	// If getPostBySlug returns null, use initialPost as fallback
 	if (!post && initialPost) {
 		console.log(
 			`[Article Page] getPostBySlug returned null for "${slug}", using initialPost as fallback`,
@@ -57,38 +56,32 @@ try {
 		post = initialPost;
 	}
 } catch (error) {
-	console.error(
-		`Erreur lors de la récupération de l'article "${slug}":`,
-		error,
-	);
+	console.error(`Error fetching article "${slug}":`, error);
 	post = initialPost;
 }
 
-// Récupère les articles adjacents pour la navigation Previous/Next
+// Fetch adjacent articles for Previous/Next navigation
 const { older, newer } = await getAdjacentPosts(slug as string);
 
-// Récupère les données complètes de la série si l'article appartient à une série
+// Fetch complete series data if the article belongs to a series
 let seriesData: Series | null = null;
 if (post?.series?.slug) {
 	try {
 		seriesData = await getSeriesBySlug(post.series.slug);
 	} catch (error) {
-		console.error(
-			`Erreur lors de la récupération de la série "${post.series.slug}":`,
-			error,
-		);
+		console.error(`Error fetching series "${post.series.slug}":`, error);
 	}
 }
 
-// Formatage de la date
+// Date formatting
 const publishedDate = post ? formatDate(post.publishedAt) : "";
 
-// Extraction des headings pour la TOC
+// Extract headings for TOC
 const headings = post?.content?.html
 	? extractHeadingsFromHtml(post.content.html)
 	: [];
 
-// Breadcrumbs avec icônes (comme le template original)
+// Breadcrumbs with icons
 const breadcrumbItems = [
 	{ label: "Articles", href: "/articles", icon: "lucide:library-big" },
 	{ label: post?.title || "Article", icon: "lucide:book-open-text" },
@@ -99,10 +92,10 @@ const breadcrumbItems = [
   <PageHead
     slot="head"
     title={post?.title || 'Article'}
-    description={post?.brief || 'Un article'}
+    description={post?.brief || 'An article'}
   />
 
-  <!-- TOC Mobile (affiché dans le header sticky) -->
+  <!-- TOC Mobile (displayed in sticky header) -->
   {headings.length > 0 && (
     <TOCHeader headings={headings} slot="table-of-contents" />
   )}
@@ -116,7 +109,7 @@ const breadcrumbItems = [
         <Breadcrumbs items={breadcrumbItems} />
       </div>
 
-      <!-- Image de couverture -->
+      <!-- Cover image -->
       {post.coverImage && (
         <img
           src={post.coverImage.url}
@@ -125,10 +118,10 @@ const breadcrumbItems = [
         />
       )}
 
-      <!-- Header de l'article (centré) -->
+      <!-- Article header (centered) -->
       <section class="col-start-2 flex flex-col gap-y-6 text-center">
         <div class="flex flex-col">
-          <!-- Série (si l'article appartient à une série) -->
+          <!-- Series (if article belongs to a series) -->
           {post.series && (
             <Link
               href={`/series/${post.series.slug}`}
@@ -139,7 +132,7 @@ const breadcrumbItems = [
             </Link>
           )}
 
-          <!-- Titre -->
+          <!-- Title -->
           <h1
             class="mb-2 scroll-mt-31 text-3xl leading-tight font-medium sm:text-4xl"
             id="post-title"
@@ -147,7 +140,7 @@ const breadcrumbItems = [
             {post.title}
           </h1>
 
-          <!-- Métadonnées -->
+          <!-- Metadata -->
           <div
             class="text-muted-foreground divide-border mb-4 flex flex-col items-center justify-center divide-y text-xs sm:flex-row sm:flex-wrap sm:divide-x sm:divide-y-0 sm:text-sm"
           >
@@ -183,24 +176,24 @@ const breadcrumbItems = [
         />
       </section>
 
-      <!-- Wrapper pour TOC + Contenu (toujours alignés) -->
+      <!-- Wrapper for TOC + Content (always aligned) -->
       <div class="col-span-full grid grid-cols-[minmax(0px,1fr)_min(calc(var(--breakpoint-md)-2rem),100%)_minmax(0px,1fr)]">
-        <!-- TOC Sidebar pour desktop (à gauche, proche du contenu) -->
+        <!-- TOC Sidebar for desktop (left, close to content) -->
         {headings.length > 0 && (
           <div class="col-start-1 flex justify-end pr-12">
             <TOCSidebar headings={headings} />
           </div>
         )}
 
-        <!-- Contenu de l'article -->
+        <!-- Article content -->
         <article class="prose col-start-2 max-w-none dark:prose-invert">
           {post.content?.html ? (
             <Fragment set:html={post.content.html} />
           ) : (
-            <p class="text-muted-foreground">Contenu non disponible.</p>
+            <p class="text-muted-foreground">Content not available.</p>
           )}
 
-          <!-- Carte de navigation de série (uniquement si l'article appartient à une série) -->
+          <!-- Series navigation card (only if article belongs to a series) -->
           {seriesData && seriesData.posts?.edges && (
             <SeriesNavCard
               seriesName={seriesData.name}
@@ -213,7 +206,7 @@ const breadcrumbItems = [
         </article>
       </div>
 
-      <!-- Navigation Previous/Next Post (fin de l'article) -->
+      <!-- Navigation Previous/Next Post (end of article) -->
       <div class="col-start-2">
         <PostNavigation
           newerPost={newer ? { title: newer.title, slug: newer.slug } : undefined}
@@ -222,20 +215,11 @@ const breadcrumbItems = [
       </div>
     </section>
   ) : (
-    <!-- Article non trouvé -->
+    <!-- Not found state -->
     <section class="py-12 text-center">
-      <Icon name="lucide:alert-circle" class="size-12 text-muted-foreground/50 mx-auto mb-4" />
-      <h1 class="text-2xl font-bold mb-2">Article non trouvé</h1>
-      <p class="text-muted-foreground mb-6">
-        L'article que vous recherchez n'existe pas ou a été supprimé.
+      <p class="text-xl text-muted-foreground">
+        No article found! Soon to come 🚀
       </p>
-      <Link
-        href="/articles"
-        class="text-primary hover:underline flex items-center justify-center gap-2"
-      >
-        <Icon name="lucide:arrow-left" class="size-4" />
-        Retour aux articles
-      </Link>
     </section>
   )}
 </Layout>

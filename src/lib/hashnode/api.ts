@@ -1,10 +1,10 @@
 /**
- * Fonctions API pour Hashnode
+ * Hashnode API Functions
  *
- * Ce fichier expose des fonctions simples pour récupérer les données.
- * Ces fonctions encapsulent les requêtes GraphQL et retournent des données typées.
+ * This file exposes simple functions to fetch data.
+ * These functions encapsulate GraphQL queries and return typed data.
  *
- * Utilisation dans une page Astro:
+ * Usage in an Astro page:
  * ```
  * import { getAllPosts } from '@/lib/hashnode/api';
  * const posts = await getAllPosts();
@@ -29,12 +29,12 @@ import type {
 	SeriesResponse,
 } from "./types";
 
-// ==================== Fonctions pour les Articles ====================
+// ==================== Article Functions ====================
 
 /**
- * Récupère tous les articles publiés
- * @param first - Nombre d'articles à récupérer (défaut: 50)
- * @returns Liste des articles triés par date de publication (plus récent en premier)
+ * Fetches all published articles
+ * @param first - Number of articles to fetch (default: 50)
+ * @returns List of articles sorted by publication date (newest first)
  */
 export async function getAllPosts(first: number = 50): Promise<Post[]> {
 	console.log(
@@ -44,7 +44,7 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
 		first,
 	);
 
-	// Query statique - ISR côté Vercel gère la fraîcheur des données
+	// Static query - ISR on Vercel handles data freshness
 	const query = `
 query GetAllPosts {
 	publication(host: "${HASHNODE_HOST}") {
@@ -87,7 +87,7 @@ query GetAllPosts {
 			JSON.stringify(data, null, 2).slice(0, 1000),
 		);
 
-		// Vérifier les erreurs GraphQL
+		// Check for GraphQL errors
 		if (data.errors) {
 			console.error(
 				"[Hashnode API] GraphQL errors:",
@@ -96,7 +96,7 @@ query GetAllPosts {
 			return [];
 		}
 
-		// Vérifier que la publication existe
+		// Check that publication exists
 		if (!data?.data?.publication) {
 			console.error(
 				"[Hashnode API] Publication not found for host:",
@@ -122,9 +122,9 @@ query GetAllPosts {
 }
 
 /**
- * Récupère un article par son slug
- * @param slug - Identifiant unique de l'article (dans l'URL)
- * @returns L'article ou null si non trouvé
+ * Fetches an article by its slug
+ * @param slug - Unique identifier of the article (in URL)
+ * @returns The article or null if not found
  */
 export async function getPostBySlug(slug: string): Promise<Post | null> {
 	console.log(
@@ -154,7 +154,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     }
   `;
 
-	// Timestamp pour forcer un cache-bust absolu
+	// Timestamp to force absolute cache-bust
 	const timestamp = Date.now();
 
 	try {
@@ -207,22 +207,22 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 }
 
 /**
- * Récupère les N articles les plus récents
- * @param count - Nombre d'articles à récupérer
- * @returns Liste des articles récents
+ * Fetches the N most recent articles
+ * @param count - Number of articles to fetch
+ * @returns List of recent articles
  */
 export async function getRecentPosts(count: number = 5): Promise<Post[]> {
-	// Toujours fetch 50 pour éviter les problèmes de cache Stellate avec petites valeurs
+	// Always fetch 50 to avoid Stellate cache issues with small values
 	const posts = await getAllPosts(50);
 	return posts.slice(0, count);
 }
 
-// ==================== Fonctions pour les Séries ====================
+// ==================== Series Functions ====================
 
 /**
- * Récupère toutes les séries
- * @param first - Nombre de séries à récupérer (défaut: 20)
- * @returns Liste des séries
+ * Fetches all series
+ * @param first - Number of series to fetch (default: 20)
+ * @returns List of series
  */
 export async function getAllSeries(first: number = 20): Promise<Series[]> {
 	console.log(
@@ -232,7 +232,7 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 		first,
 	);
 
-	// Query statique - ISR côté Vercel gère la fraîcheur des données
+	// Static query - ISR on Vercel handles data freshness
 	const query = `
 query GetAllSeries {
 	publication(host: "${HASHNODE_HOST}") {
@@ -311,9 +311,9 @@ query GetAllSeries {
 }
 
 /**
- * Récupère une série par son slug avec tous ses articles
- * @param slug - Identifiant unique de la série
- * @returns La série avec ses articles ou null si non trouvée
+ * Fetches a series by its slug with all its articles
+ * @param slug - Unique identifier of the series
+ * @returns The series with its articles or null if not found
  */
 export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 	console.log(
@@ -323,7 +323,7 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 		HASHNODE_HOST,
 	);
 
-	// Requête inline (sans variables) pour éviter les problèmes de cache Stellate
+	// Inline query (without variables) to avoid Stellate cache issues
 	const query = `{
 		publication(host: "${HASHNODE_HOST}") {
 			series(slug: "${slug}") {
@@ -391,21 +391,21 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 }
 
 /**
- * Récupère les N séries "featured" (à mettre en avant sur la Home)
- * @param count - Nombre de séries à récupérer
- * @returns Liste des séries en vedette
+ * Fetches the N "featured" series (to highlight on the Home page)
+ * @param count - Number of series to fetch
+ * @returns List of featured series
  */
 export async function getFeaturedSeries(count: number = 2): Promise<Series[]> {
-	// Toujours fetch 20 pour éviter les problèmes de cache Stellate avec petites valeurs
+	// Always fetch 20 to avoid Stellate cache issues with small values
 	const series = await getAllSeries(20);
 	return series.slice(0, count);
 }
 
-// ==================== Fonctions pour la Publication ====================
+// ==================== Publication Functions ====================
 
 /**
- * Récupère les informations générales du blog
- * @returns Informations de la publication
+ * Fetches general blog information
+ * @returns Publication information
  */
 export async function getPublicationInfo() {
 	const client = getClient();
@@ -420,15 +420,15 @@ export async function getPublicationInfo() {
 
 		return data.publication;
 	} catch (error) {
-		console.error("Erreur lors de la récupération des infos du blog:", error);
+		console.error("Error fetching blog info:", error);
 		return null;
 	}
 }
 
-// ==================== Utilitaires ====================
+// ==================== Utilities ====================
 
 /**
- * Type pour les headings extraits du HTML (compatible avec Astro MarkdownHeading)
+ * Type for headings extracted from HTML (compatible with Astro MarkdownHeading)
  */
 export interface ExtractedHeading {
 	depth: number;
@@ -437,17 +437,17 @@ export interface ExtractedHeading {
 }
 
 /**
- * Extrait les headings (h2-h6) du contenu HTML pour générer une table des matières
- * @param html - Contenu HTML de l'article
- * @returns Liste des headings avec leur profondeur, slug et texte
+ * Extracts headings (h2-h6) from HTML content to generate a table of contents
+ * @param html - HTML content of the article
+ * @returns List of headings with their depth, slug and text
  */
 export function extractHeadingsFromHtml(html: string): ExtractedHeading[] {
 	if (!html) return [];
 
 	const headings: ExtractedHeading[] = [];
 
-	// Regex pour trouver les balises h2-h6 avec leur contenu
-	// Capture: le niveau (2-6), l'id optionnel, et le texte
+	// Regex to find h2-h6 tags with their content
+	// Captures: level (2-6), optional id, and text
 	const headingRegex =
 		/<h([2-6])(?:[^>]*id=["']([^"']+)["'])?[^>]*>(.*?)<\/h\1>/gi;
 
@@ -457,10 +457,10 @@ export function extractHeadingsFromHtml(html: string): ExtractedHeading[] {
 		let id = match[2] || "";
 		const rawText = match[3];
 
-		// Nettoyer le texte HTML (enlever les balises internes)
+		// Clean HTML text (remove internal tags)
 		const text = rawText.replace(/<[^>]+>/g, "").trim();
 
-		// Si pas d'id, générer un slug à partir du texte
+		// If no id, generate a slug from the text
 		if (!id) {
 			id = text
 				.toLowerCase()
@@ -479,9 +479,9 @@ export function extractHeadingsFromHtml(html: string): ExtractedHeading[] {
 }
 
 /**
- * Formate une date ISO en format lisible
- * @param dateString - Date au format ISO
- * @returns Date formatée (ex: "6 janvier 2026")
+ * Formats an ISO date to a readable format
+ * @param dateString - Date in ISO format
+ * @returns Formatted date (e.g.: "January 6, 2026")
  */
 export function formatDate(dateString: string): string {
 	const date = new Date(dateString);
@@ -493,9 +493,9 @@ export function formatDate(dateString: string): string {
 }
 
 /**
- * Récupère les articles d'une série spécifique
- * @param seriesSlug - Slug de la série
- * @returns Liste des articles de la série
+ * Fetches articles from a specific series
+ * @param seriesSlug - Series slug
+ * @returns List of articles in the series
  */
 export async function getPostsBySeries(seriesSlug: string): Promise<Post[]> {
 	const series = await getSeriesBySlug(seriesSlug);
@@ -508,15 +508,15 @@ export async function getPostsBySeries(seriesSlug: string): Promise<Post[]> {
 }
 
 /**
- * Récupère les articles adjacents (précédent et suivant) pour la navigation
- * @param currentSlug - Slug de l'article actuel
+ * Fetches adjacent articles (previous and next) for navigation
+ * @param currentSlug - Current article slug
  * @returns { older: Post | null, newer: Post | null }
  */
 export async function getAdjacentPosts(currentSlug: string): Promise<{
 	older: Post | null;
 	newer: Post | null;
 }> {
-	const allPosts = await getAllPosts(50); // Tous les articles triés par date (max 50 selon API Hashnode)
+	const allPosts = await getAllPosts(50); // All articles sorted by date (max 50 per Hashnode API)
 	const currentIndex = allPosts.findIndex((post) => post.slug === currentSlug);
 
 	if (currentIndex === -1) {
@@ -524,9 +524,9 @@ export async function getAdjacentPosts(currentSlug: string): Promise<{
 	}
 
 	return {
-		// newer = article plus récent (index inférieur dans le tableau)
+		// newer = more recent article (lower index in array)
 		newer: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
-		// older = article plus ancien (index supérieur dans le tableau)
+		// older = older article (higher index in array)
 		older:
 			currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null,
 	};
