@@ -109,6 +109,15 @@ async function getProcessedTemplate(
 	let htmlContent = templateData.htmlContent as string;
 	let subject = templateData.subject as string;
 
+	// Process {% if params.xxx %}...{% endif %} blocks
+	for (const [key, value] of Object.entries(params)) {
+		const ifBlockRegex = new RegExp(
+			`\\{%\\s*if\\s+params\\.${key}\\s*%\\}([\\s\\S]*?)\\{%\\s*endif\\s*%\\}`,
+			"g",
+		);
+		htmlContent = htmlContent.replace(ifBlockRegex, value ? "$1" : "");
+	}
+
 	// Replace all {{ params.xxx }} placeholders
 	for (const [key, value] of Object.entries(params)) {
 		const placeholder = new RegExp(`\\{\\{\\s*params\\.${key}\\s*\\}\\}`, "g");
