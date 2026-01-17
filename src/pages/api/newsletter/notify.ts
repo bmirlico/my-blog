@@ -49,7 +49,7 @@ function verifyHashnodeSignature(
 // Fetch post details from Hashnode GraphQL API
 async function fetchPostById(postId: string): Promise<PostDetails | null> {
 	const query = `
-		query GetPostById($id: ObjectId!) {
+		query GetPostById($id: ID!) {
 			post(id: $id) {
 				id
 				title
