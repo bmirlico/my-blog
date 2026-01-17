@@ -44,13 +44,13 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
 		first,
 	);
 
-	// Requête inline (sans variables) pour éviter les problèmes de cache Stellate
-	// Ajout d'un timestamp pour forcer le bypass du cache
+	// Query nommée avec timestamp pour bypasser le cache Stellate
+	// Stellate cache basé sur le texte de la query - un nom unique = pas de cache
 	const timestamp = Date.now();
-	const query = `# cache-bust: ${timestamp}
-{
-		publication(host: "${HASHNODE_HOST}") {
-			posts(first: ${first}) {
+	const query = `
+query GetAllPosts_${timestamp} {
+	publication(host: "${HASHNODE_HOST}") {
+		posts(first: ${first}) {
 				edges {
 					node {
 						id
@@ -236,12 +236,12 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 		first,
 	);
 
-	// Requête inline (sans variables) pour éviter les problèmes de cache Stellate
+	// Query nommée avec timestamp pour bypasser le cache Stellate
 	const timestamp = Date.now();
-	const query = `# cache-bust: ${timestamp}
-{
-		publication(host: "${HASHNODE_HOST}") {
-			seriesList(first: ${first}) {
+	const query = `
+query GetAllSeries_${timestamp} {
+	publication(host: "${HASHNODE_HOST}") {
+		seriesList(first: ${first}) {
 				edges {
 					node {
 						id
