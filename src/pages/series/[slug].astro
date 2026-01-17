@@ -8,50 +8,50 @@
  * Cela permet à Astro de pré-générer toutes les pages au build.
  */
 
-import ArticleCard from '@/components/ArticleCard.astro'
-import Link from '@/components/Link.astro'
-import PageHead from '@/components/PageHead.astro'
-import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import Layout from '@/layouts/Layout.astro'
-import { Icon } from 'astro-icon/components'
+import ArticleCard from "@/components/ArticleCard.astro";
+import Link from "@/components/Link.astro";
+import PageHead from "@/components/PageHead.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import Layout from "@/layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
 
 // Import des fonctions API Hashnode
-import { getAllSeries, getSeriesBySlug } from '@/lib/hashnode/api'
-import type { Series, Post } from '@/lib/hashnode/types'
+import { getAllSeries, getSeriesBySlug } from "@/lib/hashnode/api";
+import type { Series, Post } from "@/lib/hashnode/types";
 
 // Cette fonction génère toutes les routes possibles au moment du build
 // Astro va appeler getStaticPaths() une fois, puis créer une page pour chaque objet retourné
 export async function getStaticPaths() {
-  // Récupère toutes les séries pour générer leurs routes
-  const allSeries = await getAllSeries(20)  // Limite API: 20 max
+	// Récupère toutes les séries pour générer leurs routes
+	const allSeries = await getAllSeries(20); // Limite API: 20 max
 
-  // Retourne un tableau d'objets avec les paramètres de chaque route
-  return allSeries.map((series) => ({
-    params: { slug: series.slug },  // Le [slug] dans l'URL
-    props: { series },               // Données passées à la page
-  }))
+	// Retourne un tableau d'objets avec les paramètres de chaque route
+	return allSeries.map((series) => ({
+		params: { slug: series.slug }, // Le [slug] dans l'URL
+		props: { series }, // Données passées à la page
+	}));
 }
 
 // Récupère les props passés par getStaticPaths
 interface Props {
-  series: Series
+	series: Series;
 }
 
-const { slug } = Astro.params
-const { series: initialSeries } = Astro.props
+const { slug } = Astro.params;
+const { series: initialSeries } = Astro.props;
 
 // Récupère les détails complets de la série (avec tous les articles)
-let series: Series | null = null
-let posts: Post[] = []
+let series: Series | null = null;
+let posts: Post[] = [];
 
 try {
-  series = await getSeriesBySlug(slug as string)
-  if (series?.posts?.edges) {
-    posts = series.posts.edges.map(edge => edge.node)
-  }
+	series = await getSeriesBySlug(slug as string);
+	if (series?.posts?.edges) {
+		posts = series.posts.edges.map((edge) => edge.node);
+	}
 } catch (error) {
-  console.error(`Erreur lors de la récupération de la série "${slug}":`, error)
-  series = initialSeries
+	console.error(`Erreur lors de la récupération de la série "${slug}":`, error);
+	series = initialSeries;
 }
 
 // Si la série n'existe pas, on pourrait rediriger vers 404
@@ -59,10 +59,10 @@ try {
 
 // Breadcrumbs pour la navigation
 const breadcrumbs = [
-  { label: 'Home', href: '/' },
-  { label: 'Series', href: '/series' },
-  { label: series?.name || 'Série', href: '' },
-]
+	{ label: "Home", href: "/" },
+	{ label: "Series", href: "/series" },
+	{ label: series?.name || "Série", href: "" },
+];
 ---
 
 <Layout class="max-w-3xl">

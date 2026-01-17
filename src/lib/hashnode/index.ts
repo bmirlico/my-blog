@@ -8,25 +8,25 @@
 
 // Réexporter toutes les fonctions API
 export {
-  getAllPosts,
-  getPostBySlug,
-  getRecentPosts,
-  getAllSeries,
-  getSeriesBySlug,
-  getFeaturedSeries,
-  getPublicationInfo,
-  getPostsBySeries,
-  formatDate,
+	getAllPosts,
+	getPostBySlug,
+	getRecentPosts,
+	getAllSeries,
+	getSeriesBySlug,
+	getFeaturedSeries,
+	getPublicationInfo,
+	getPostsBySeries,
+	formatDate,
 } from "./api";
 
 // Réexporter les types pour une utilisation dans les composants
 export type {
-  Post,
-  Series,
-  Author,
-  Tag,
-  CoverImage,
-  Content,
+	Post,
+	Series,
+	Author,
+	Tag,
+	CoverImage,
+	Content,
 } from "./types";
 
 // Réexporter le client si besoin de requêtes personnalisées

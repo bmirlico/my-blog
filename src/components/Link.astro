@@ -1,28 +1,28 @@
 ---
 // src/components/Link.astro
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 
 interface Props {
-  href: string
-  external?: boolean
-  class?: string
-  underline?: boolean
-  'aria-label'?: string
-  'data-testid'?: string
-  'data-astro-reload'?: boolean
-  target?: '_blank' | '_self' | '_parent' | '_top'
-  rel?: string
-  // Allow standard HTML anchor attributes
-  id?: string
-  title?: string
-  download?: string
-  hreflang?: string
-  type?: string
+	href: string;
+	external?: boolean;
+	class?: string;
+	underline?: boolean;
+	"aria-label"?: string;
+	"data-testid"?: string;
+	"data-astro-reload"?: boolean;
+	target?: "_blank" | "_self" | "_parent" | "_top";
+	rel?: string;
+	// Allow standard HTML anchor attributes
+	id?: string;
+	title?: string;
+	download?: string;
+	hreflang?: string;
+	type?: string;
 }
 
-const { href, external, class: className, underline, ...rest } = Astro.props
+const { href, external, class: className, underline, ...rest } = Astro.props;
 
-const isExternal = external || href.startsWith('http')
+const isExternal = external || href.startsWith("http");
 ---
 
 <a

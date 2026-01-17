@@ -8,74 +8,91 @@
  * Layout: TOC à gauche, contenu à droite (comme le template original)
  */
 
-import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import Link from '@/components/Link.astro'
-import PageHead from '@/components/PageHead.astro'
-import PostNavigation from '@/components/PostNavigation.astro'
-import SeriesNavCard from '@/components/SeriesNavCard.astro'
-import TOCHeader from '@/components/TOCHeader.astro'
-import TOCSidebar from '@/components/TOCSidebar.astro'
-import { badgeVariants } from '@/components/ui/badge'
-import Layout from '@/layouts/Layout.astro'
-import { Icon } from 'astro-icon/components'
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import Link from "@/components/Link.astro";
+import PageHead from "@/components/PageHead.astro";
+import PostNavigation from "@/components/PostNavigation.astro";
+import SeriesNavCard from "@/components/SeriesNavCard.astro";
+import TOCHeader from "@/components/TOCHeader.astro";
+import TOCSidebar from "@/components/TOCSidebar.astro";
+import { badgeVariants } from "@/components/ui/badge";
+import Layout from "@/layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
 
 // Import des fonctions API Hashnode
-import { getAllPosts, getPostBySlug, getSeriesBySlug, formatDate, extractHeadingsFromHtml, getAdjacentPosts } from '@/lib/hashnode/api'
-import type { Post, Series } from '@/lib/hashnode/types'
+import {
+	getAllPosts,
+	getPostBySlug,
+	getSeriesBySlug,
+	formatDate,
+	extractHeadingsFromHtml,
+	getAdjacentPosts,
+} from "@/lib/hashnode/api";
+import type { Post, Series } from "@/lib/hashnode/types";
 
 // Génère toutes les routes possibles au moment du build
 export async function getStaticPaths() {
-  const allPosts = await getAllPosts(50)  // Limite API: 50 max
+	const allPosts = await getAllPosts(50); // Limite API: 50 max
 
-  return allPosts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }))
+	return allPosts.map((post) => ({
+		params: { slug: post.slug },
+		props: { post },
+	}));
 }
 
-const { slug } = Astro.params
-const { post: initialPost } = Astro.props as { post: Post }
+const { slug } = Astro.params;
+const { post: initialPost } = Astro.props as { post: Post };
 
 // Récupère les détails complets de l'article (avec le contenu HTML)
-let post: Post | null = null
+let post: Post | null = null;
 
 try {
-  post = await getPostBySlug(slug as string)
+	post = await getPostBySlug(slug as string);
 
-  // Si getPostBySlug retourne null, utiliser initialPost comme fallback
-  if (!post && initialPost) {
-    console.log(`[Article Page] getPostBySlug returned null for "${slug}", using initialPost as fallback`)
-    post = initialPost
-  }
+	// Si getPostBySlug retourne null, utiliser initialPost comme fallback
+	if (!post && initialPost) {
+		console.log(
+			`[Article Page] getPostBySlug returned null for "${slug}", using initialPost as fallback`,
+		);
+		post = initialPost;
+	}
 } catch (error) {
-  console.error(`Erreur lors de la récupération de l'article "${slug}":`, error)
-  post = initialPost
+	console.error(
+		`Erreur lors de la récupération de l'article "${slug}":`,
+		error,
+	);
+	post = initialPost;
 }
 
 // Récupère les articles adjacents pour la navigation Previous/Next
-const { older, newer } = await getAdjacentPosts(slug as string)
+const { older, newer } = await getAdjacentPosts(slug as string);
 
 // Récupère les données complètes de la série si l'article appartient à une série
-let seriesData: Series | null = null
+let seriesData: Series | null = null;
 if (post?.series?.slug) {
-  try {
-    seriesData = await getSeriesBySlug(post.series.slug)
-  } catch (error) {
-    console.error(`Erreur lors de la récupération de la série "${post.series.slug}":`, error)
-  }
+	try {
+		seriesData = await getSeriesBySlug(post.series.slug);
+	} catch (error) {
+		console.error(
+			`Erreur lors de la récupération de la série "${post.series.slug}":`,
+			error,
+		);
+	}
 }
 
 // Formatage de la date
-const publishedDate = post ? formatDate(post.publishedAt) : ''
+const publishedDate = post ? formatDate(post.publishedAt) : "";
 
 // Extraction des headings pour la TOC
-const headings = post?.content?.html ? extractHeadingsFromHtml(post.content.html) : []
+const headings = post?.content?.html
+	? extractHeadingsFromHtml(post.content.html)
+	: [];
 
 // Breadcrumbs avec icônes (comme le template original)
 const breadcrumbItems = [
-  { label: 'Articles', href: '/articles', icon: 'lucide:library-big' },
-  { label: post?.title || 'Article', icon: 'lucide:book-open-text' },
-]
+	{ label: "Articles", href: "/articles", icon: "lucide:library-big" },
+	{ label: post?.title || "Article", icon: "lucide:book-open-text" },
+];
 ---
 
 <Layout>

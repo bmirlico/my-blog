@@ -10,45 +10,45 @@
  * Les données viennent de Hashnode via les fonctions API.
  */
 
-import ArticleCard from '@/components/ArticleCard.astro'
-import SeriesCard from '@/components/SeriesCard.astro'
-import Link from '@/components/Link.astro'
-import PageHead from '@/components/PageHead.astro'
-import { buttonVariants } from '@/components/ui/button'
-import Layout from '@/layouts/Layout.astro'
-import { Icon } from 'astro-icon/components'
-import { SITE } from '@/consts'
+import ArticleCard from "@/components/ArticleCard.astro";
+import SeriesCard from "@/components/SeriesCard.astro";
+import Link from "@/components/Link.astro";
+import PageHead from "@/components/PageHead.astro";
+import { buttonVariants } from "@/components/ui/button";
+import Layout from "@/layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
+import { SITE } from "@/consts";
 
 // Import des fonctions API Hashnode
-import { getFeaturedSeries, getRecentPosts } from '@/lib/hashnode/api'
-import type { Post, Series } from '@/lib/hashnode/types'
+import { getFeaturedSeries, getRecentPosts } from "@/lib/hashnode/api";
+import type { Post, Series } from "@/lib/hashnode/types";
 
 // Récupération des données depuis Hashnode
-let featuredSeries: Series[] = []
-let latestPosts: Post[] = []
+let featuredSeries: Series[] = [];
+let latestPosts: Post[] = [];
 
 try {
-  // Récupère les 2 premières séries (featured)
-  featuredSeries = await getFeaturedSeries(2)
+	// Récupère les 2 premières séries (featured)
+	featuredSeries = await getFeaturedSeries(2);
 } catch (error) {
-  console.error('Erreur lors de la récupération des séries:', error)
+	console.error("Erreur lors de la récupération des séries:", error);
 }
 
 try {
-  // Récupère les 5 derniers articles
-  latestPosts = await getRecentPosts(5)
+	// Récupère les 5 derniers articles
+	latestPosts = await getRecentPosts(5);
 } catch (error) {
-  console.error('Erreur lors de la récupération des articles:', error)
+	console.error("Erreur lors de la récupération des articles:", error);
 }
 
 // Schema SEO pour la page d'accueil
 const websiteSchema = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": SITE.title,
-  "url": SITE.href,
-  "description": SITE.description,
-}
+	"@context": "https://schema.org",
+	"@type": "WebSite",
+	name: SITE.title,
+	url: SITE.href,
+	description: SITE.description,
+};
 ---
 
 <Layout class="max-w-3xl">

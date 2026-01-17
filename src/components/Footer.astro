@@ -1,14 +1,14 @@
 ---
-import { SOCIAL_LINKS, NAV_LINKS, SITE } from '@/consts'
-import SocialIcons from './SocialIcons.astro'
-import Link from '@/components/Link.astro'
-import Newsletter from './react/Newsletter'
-import { ErrorBoundary } from './react/ErrorBoundary'
-import { Icon } from 'astro-icon/components'
+import { SOCIAL_LINKS, NAV_LINKS, SITE } from "@/consts";
+import SocialIcons from "./SocialIcons.astro";
+import Link from "@/components/Link.astro";
+import Newsletter from "./react/Newsletter";
+import { ErrorBoundary } from "./react/ErrorBoundary";
+import { Icon } from "astro-icon/components";
 
 const isExternalLink = (href: string) => {
-  return href.startsWith('http')
-}
+	return href.startsWith("http");
+};
 ---
 
 <footer class="bg-background/80 border-t border-border/50 backdrop-blur-md">

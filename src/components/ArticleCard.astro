@@ -6,17 +6,17 @@
  * Il est utilisé sur la page Articles et la page Home.
  */
 
-import { Icon } from 'astro-icon/components'
-import Link from './Link.astro'
-import type { Post } from '@/lib/hashnode/types'
-import { formatDate } from '@/lib/hashnode/api'
+import { Icon } from "astro-icon/components";
+import Link from "./Link.astro";
+import type { Post } from "@/lib/hashnode/types";
+import { formatDate } from "@/lib/hashnode/api";
 
 interface Props {
-  post: Post
+	post: Post;
 }
 
-const { post } = Astro.props
-const formattedDate = formatDate(post.publishedAt)
+const { post } = Astro.props;
+const formattedDate = formatDate(post.publishedAt);
 ---
 
 <Link

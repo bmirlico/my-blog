@@ -5,19 +5,19 @@
  * Affiche les boutons de navigation vers l'article précédent et suivant.
  * Adapté pour les données Hashnode (slug/title au lieu de id/data.title).
  */
-import Link from '@/components/Link.astro'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Icon } from 'astro-icon/components'
+import Link from "@/components/Link.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Icon } from "astro-icon/components";
 
-type Post = { title: string; slug: string } | null | undefined
+type Post = { title: string; slug: string } | null | undefined;
 
 type Props = {
-  newerPost?: Post
-  olderPost?: Post
-}
+	newerPost?: Post;
+	olderPost?: Post;
+};
 
-const { newerPost, olderPost } = Astro.props
+const { newerPost, olderPost } = Astro.props;
 ---
 
 <nav class="grid grid-cols-1 gap-4 sm:grid-cols-2">

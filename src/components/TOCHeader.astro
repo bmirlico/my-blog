@@ -5,16 +5,16 @@
  * Displays a compact, collapsible TOC for mobile devices.
  * Shows current section and reading progress.
  */
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn, getHeadingMargin } from '@/lib/utils'
-import type { ExtractedHeading } from '@/lib/hashnode/api'
-import { Icon } from 'astro-icon/components'
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn, getHeadingMargin } from "@/lib/utils";
+import type { ExtractedHeading } from "@/lib/hashnode/api";
+import { Icon } from "astro-icon/components";
 
 type Props = {
-  headings: ExtractedHeading[]
-}
+	headings: ExtractedHeading[];
+};
 
-const { headings } = Astro.props
+const { headings } = Astro.props;
 ---
 
 {

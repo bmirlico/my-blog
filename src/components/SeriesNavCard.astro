@@ -9,30 +9,32 @@
  * - Lien "Next" vers l'article suivant
  */
 
-import Link from './Link.astro'
-import { Icon } from 'astro-icon/components'
-import { formatDate } from '@/lib/hashnode/api'
+import Link from "./Link.astro";
+import { Icon } from "astro-icon/components";
+import { formatDate } from "@/lib/hashnode/api";
 
 interface SeriesPost {
-  id: string
-  title: string
-  slug: string
-  publishedAt?: string
+	id: string;
+	title: string;
+	slug: string;
+	publishedAt?: string;
 }
 
 interface Props {
-  seriesName: string
-  seriesSlug: string
-  seriesDescription?: string
-  posts: SeriesPost[]
-  currentSlug: string
+	seriesName: string;
+	seriesSlug: string;
+	seriesDescription?: string;
+	posts: SeriesPost[];
+	currentSlug: string;
 }
 
-const { seriesName, seriesSlug, seriesDescription, posts, currentSlug } = Astro.props
+const { seriesName, seriesSlug, seriesDescription, posts, currentSlug } =
+	Astro.props;
 
 // Trouver l'index de l'article actuel et l'article suivant
-const currentIndex = posts.findIndex(p => p.slug === currentSlug)
-const nextPost = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
+const currentIndex = posts.findIndex((p) => p.slug === currentSlug);
+const nextPost =
+	currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null;
 ---
 
 <aside class="rounded-lg border border-border bg-card p-6 my-8">

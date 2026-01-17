@@ -3,32 +3,32 @@
 // Usage: <FAQSchema questions={[{ question: "...", answer: "..." }]} />
 
 interface FAQItem {
-  question: string
-  answer: string
+	question: string;
+	answer: string;
 }
 
 interface Props {
-  questions: FAQItem[]
+	questions: FAQItem[];
 }
 
-const { questions } = Astro.props
+const { questions } = Astro.props;
 
 if (!questions || questions.length === 0) {
-  return null
+	return null;
 }
 
 const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": questions.map((item) => ({
-    "@type": "Question",
-    "name": item.question,
-    "acceptedAnswer": {
-      "@type": "Answer",
-      "text": item.answer
-    }
-  }))
-}
+	"@context": "https://schema.org",
+	"@type": "FAQPage",
+	mainEntity: questions.map((item) => ({
+		"@type": "Question",
+		name: item.question,
+		acceptedAnswer: {
+			"@type": "Answer",
+			text: item.answer,
+		},
+	})),
+};
 ---
 
 <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />

@@ -1,14 +1,18 @@
 ---
-import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import PageHead from '@/components/PageHead.astro'
-import Layout from '@/layouts/Layout.astro'
-import { Icon } from 'astro-icon/components'
-import { SITE, SOCIAL_LINKS } from '@/consts'
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import PageHead from "@/components/PageHead.astro";
+import Layout from "@/layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
+import { SITE, SOCIAL_LINKS } from "@/consts";
 
 // Get contact email from social links or use placeholder
-const contactEmail = SOCIAL_LINKS.find(link => link.label === 'Email')?.href.replace('mailto:', '') || 'your@email.com'
-const siteName = SITE.title
-const siteUrl = SITE.href
+const contactEmail =
+	SOCIAL_LINKS.find((link) => link.label === "Email")?.href.replace(
+		"mailto:",
+		"",
+	) || "your@email.com";
+const siteName = SITE.title;
+const siteUrl = SITE.href;
 ---
 
 <Layout class="max-w-3xl">

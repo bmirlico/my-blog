@@ -1,19 +1,19 @@
 ---
-import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import PageHead from '@/components/PageHead.astro'
-import Link from '@/components/Link.astro'
-import Layout from '@/layouts/Layout.astro'
-import { Icon } from 'astro-icon/components'
-import { SITE } from '@/consts'
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import PageHead from "@/components/PageHead.astro";
+import Link from "@/components/Link.astro";
+import Layout from "@/layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
+import { SITE } from "@/consts";
 
 // Person Schema for About page
 const personSchema = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": SITE.title,
-  "url": SITE.href,
-  "description": SITE.description
-}
+	"@context": "https://schema.org",
+	"@type": "Person",
+	name: SITE.title,
+	url: SITE.href,
+	description: SITE.description,
+};
 ---
 <Layout class="max-w-3xl">
   <PageHead slot="head" title="About" />

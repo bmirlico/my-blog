@@ -1,14 +1,14 @@
 ---
-import Link from '@/components/Link.astro'
-import ThemeToggle from '@/components/ThemeToggle.astro'
-import MobileMenu from '@/components/ui/mobile-menu'
-import SearchButton from '@/components/react/SearchButton'
-import { NAV_LINKS } from '@/consts'
-import { Icon } from 'astro-icon/components'
+import Link from "@/components/Link.astro";
+import ThemeToggle from "@/components/ThemeToggle.astro";
+import MobileMenu from "@/components/ui/mobile-menu";
+import SearchButton from "@/components/react/SearchButton";
+import { NAV_LINKS } from "@/consts";
+import { Icon } from "astro-icon/components";
 
 const isExternalLink = (href: string) => {
-  return href.startsWith('http')
-}
+	return href.startsWith("http");
+};
 ---
 
 <header class="bg-background/50 sticky top-0 z-10 backdrop-blur-md" transition:persist>

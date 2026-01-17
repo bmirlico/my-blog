@@ -6,45 +6,47 @@
  * Chaque article est cliquable et mène à sa page de détail.
  */
 
-import ArticleCard from '@/components/ArticleCard.astro'
-import Link from '@/components/Link.astro'
-import PageHead from '@/components/PageHead.astro'
-import { buttonVariants } from '@/components/ui/button'
-import Layout from '@/layouts/Layout.astro'
-import { Icon } from 'astro-icon/components'
-import { SITE } from '@/consts'
+import ArticleCard from "@/components/ArticleCard.astro";
+import Link from "@/components/Link.astro";
+import PageHead from "@/components/PageHead.astro";
+import { buttonVariants } from "@/components/ui/button";
+import Layout from "@/layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
+import { SITE } from "@/consts";
 
 // Import de la fonction API Hashnode
-import { getAllPosts } from '@/lib/hashnode/api'
-import type { Post } from '@/lib/hashnode/types'
+import { getAllPosts } from "@/lib/hashnode/api";
+import type { Post } from "@/lib/hashnode/types";
 
 // Récupération de tous les articles
-let allPosts: Post[] = []
+let allPosts: Post[] = [];
 
 try {
-  allPosts = await getAllPosts(50)  // Récupère jusqu'à 50 articles (limite API)
+	allPosts = await getAllPosts(50); // Récupère jusqu'à 50 articles (limite API)
 } catch (error) {
-  console.error('Erreur lors de la récupération des articles:', error)
+	console.error("Erreur lors de la récupération des articles:", error);
 }
 
 // Grouper les articles par année pour une meilleure organisation
-type PostsByYear = { [year: string]: Post[] }
+type PostsByYear = { [year: string]: Post[] };
 
 const postsByYear: PostsByYear = allPosts.reduce((acc, post) => {
-  const year = new Date(post.publishedAt).getFullYear().toString()
-  if (!acc[year]) {
-    acc[year] = []
-  }
-  acc[year].push(post)
-  return acc
-}, {} as PostsByYear)
+	const year = new Date(post.publishedAt).getFullYear().toString();
+	if (!acc[year]) {
+		acc[year] = [];
+	}
+	acc[year].push(post);
+	return acc;
+}, {} as PostsByYear);
 
 // Trier les années de la plus récente à la plus ancienne
-const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a))
+const sortedYears = Object.keys(postsByYear).sort(
+	(a, b) => Number(b) - Number(a),
+);
 
 // Titre et description de la page
-const pageTitle = 'Articles'
-const pageDescription = 'All articles and writings.'
+const pageTitle = "Articles";
+const pageDescription = "All articles and writings.";
 ---
 
 <Layout class="max-w-3xl">

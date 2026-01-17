@@ -5,15 +5,15 @@
  * Simplified version for Hashnode content.
  * Displays a sticky sidebar with article headings on large screens.
  */
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn, getHeadingMargin } from '@/lib/utils'
-import type { ExtractedHeading } from '@/lib/hashnode/api'
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn, getHeadingMargin } from "@/lib/utils";
+import type { ExtractedHeading } from "@/lib/hashnode/api";
 
 type Props = {
-  headings: ExtractedHeading[]
-}
+	headings: ExtractedHeading[];
+};
 
-const { headings } = Astro.props
+const { headings } = Astro.props;
 ---
 
 {

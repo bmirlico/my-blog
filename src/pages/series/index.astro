@@ -6,28 +6,28 @@
  * Chaque série affiche directement la liste de ses articles.
  */
 
-import Link from '@/components/Link.astro'
-import PageHead from '@/components/PageHead.astro'
-import { buttonVariants } from '@/components/ui/button'
-import Layout from '@/layouts/Layout.astro'
-import { Icon } from 'astro-icon/components'
+import Link from "@/components/Link.astro";
+import PageHead from "@/components/PageHead.astro";
+import { buttonVariants } from "@/components/ui/button";
+import Layout from "@/layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
 
 // Import de la fonction API Hashnode
-import { getAllSeries } from '@/lib/hashnode/api'
-import type { Series } from '@/lib/hashnode/types'
+import { getAllSeries } from "@/lib/hashnode/api";
+import type { Series } from "@/lib/hashnode/types";
 
 // Récupération de toutes les séries
-let allSeries: Series[] = []
+let allSeries: Series[] = [];
 
 try {
-  allSeries = await getAllSeries(20)  // Limite API: 20 max
+	allSeries = await getAllSeries(20); // Limite API: 20 max
 } catch (error) {
-  console.error('Erreur lors de la récupération des séries:', error)
+	console.error("Erreur lors de la récupération des séries:", error);
 }
 
 // Titre et description de la page
-const pageTitle = 'Series'
-const pageDescription = 'Collections of related articles organized by topic.'
+const pageTitle = "Series";
+const pageDescription = "Collections of related articles organized by topic.";
 ---
 
 <Layout class="max-w-3xl">

@@ -1,25 +1,25 @@
 ---
 interface Props {
-  identifier: string
-  title: string
-  url?: string
+	identifier: string;
+	title: string;
+	url?: string;
 }
 
-const { identifier, title, url } = Astro.props
+const { identifier, title, url } = Astro.props;
 // Get shortname from build-time env var, with fallback for client-side check
-const disqusShortname = import.meta.env.PUBLIC_DISQUS_SHORTNAME || 'merox'
+const disqusShortname = import.meta.env.PUBLIC_DISQUS_SHORTNAME || "merox";
 
 // Sanitize inputs to prevent XSS
 const sanitize = (str: string) => {
-  return str
-    .replace(/[<>]/g, '') // Remove potential HTML tags
-    .trim()
-    .substring(0, 200) // Limit length
-}
+	return str
+		.replace(/[<>]/g, "") // Remove potential HTML tags
+		.trim()
+		.substring(0, 200); // Limit length
+};
 
-const safeIdentifier = sanitize(identifier)
-const safeTitle = sanitize(title)
-const pageUrl = url || Astro.url.href
+const safeIdentifier = sanitize(identifier);
+const safeTitle = sanitize(title);
+const pageUrl = url || Astro.url.href;
 ---
 
 <section

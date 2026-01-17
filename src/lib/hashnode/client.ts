@@ -16,7 +16,7 @@ const HASHNODE_ENDPOINT = "https://gql.hashnode.com";
  * On crée une nouvelle instance à chaque appel pour éviter les problèmes de cache
  */
 export function getClient(): GraphQLClient {
-  return new GraphQLClient(HASHNODE_ENDPOINT);
+	return new GraphQLClient(HASHNODE_ENDPOINT);
 }
 
 /**
@@ -27,16 +27,16 @@ export function getClient(): GraphQLClient {
  * les variables différemment selon le contexte de build
  */
 export const HASHNODE_HOST =
-  import.meta.env.HASHNODE_HOST ||
-  process.env.HASHNODE_HOST ||
-  'the-learning-machine.hashnode.dev';  // Fallback hardcodé pour garantir le fonctionnement
+	import.meta.env.HASHNODE_HOST ||
+	process.env.HASHNODE_HOST ||
+	"the-learning-machine.hashnode.dev"; // Fallback hardcodé pour garantir le fonctionnement
 
 // Log pour debug (visible dans les logs de build Vercel)
-console.log('[Hashnode] HASHNODE_HOST:', HASHNODE_HOST);
+console.log("[Hashnode] HASHNODE_HOST:", HASHNODE_HOST);
 
 // Vérification que la variable d'environnement est définie
 if (!import.meta.env.HASHNODE_HOST && !process.env.HASHNODE_HOST) {
-  console.warn(
-    "[Hashnode] Variables d'environnement non détectées, utilisation du fallback hardcodé"
-  );
+	console.warn(
+		"[Hashnode] Variables d'environnement non détectées, utilisation du fallback hardcodé",
+	);
 }

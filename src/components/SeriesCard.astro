@@ -6,18 +6,18 @@
  * Il est utilisé sur la page Series et la page Home (featured series).
  */
 
-import { Icon } from 'astro-icon/components'
-import Link from './Link.astro'
-import type { Series } from '@/lib/hashnode/types'
+import { Icon } from "astro-icon/components";
+import Link from "./Link.astro";
+import type { Series } from "@/lib/hashnode/types";
 
 interface Props {
-  series: Series
-  /** Afficher en mode "featured" (plus grand, avec image) */
-  featured?: boolean
+	series: Series;
+	/** Afficher en mode "featured" (plus grand, avec image) */
+	featured?: boolean;
 }
 
-const { series, featured = false } = Astro.props
-const postCount = series.posts?.totalDocuments ?? 0
+const { series, featured = false } = Astro.props;
+const postCount = series.posts?.totalDocuments ?? 0;
 ---
 
 {featured ? (

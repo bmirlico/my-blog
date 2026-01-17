@@ -1,48 +1,50 @@
 ---
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
-import { Icon } from 'astro-icon/components'
-import { SITE } from '@/consts'
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Icon } from "astro-icon/components";
+import { SITE } from "@/consts";
 
 export interface BreadcrumbItem {
-  href?: string
-  label: string
-  icon?: string
+	href?: string;
+	label: string;
+	icon?: string;
 }
 
 interface Props {
-  items: BreadcrumbItem[]
+	items: BreadcrumbItem[];
 }
 
-const { items } = Astro.props
+const { items } = Astro.props;
 
 // Generate BreadcrumbList schema for SEO
 const breadcrumbItems = [
-  {
-    "@type": "ListItem",
-    "position": 1,
-    "name": "Home",
-    "item": new URL('/', Astro.site).href
-  },
-  ...items.map((item, index) => ({
-    "@type": "ListItem",
-    "position": index + 2,
-    "name": item.label,
-    "item": item.href ? new URL(item.href, Astro.site).href : new URL(Astro.url.pathname, Astro.site).href
-  }))
-]
+	{
+		"@type": "ListItem",
+		position: 1,
+		name: "Home",
+		item: new URL("/", Astro.site).href,
+	},
+	...items.map((item, index) => ({
+		"@type": "ListItem",
+		position: index + 2,
+		name: item.label,
+		item: item.href
+			? new URL(item.href, Astro.site).href
+			: new URL(Astro.url.pathname, Astro.site).href,
+	})),
+];
 
 const breadcrumbSchema = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": breadcrumbItems
-}
+	"@context": "https://schema.org",
+	"@type": "BreadcrumbList",
+	itemListElement: breadcrumbItems,
+};
 ---
 
 <!-- BreadcrumbList Schema for SEO -->
