@@ -116,12 +116,12 @@ const breadcrumbItems = [
         <Breadcrumbs items={breadcrumbItems} />
       </div>
 
-      <!-- Image de couverture (full width) -->
+      <!-- Image de couverture -->
       {post.coverImage && (
         <img
           src={post.coverImage.url}
           alt={post.title}
-          class="col-span-full mx-auto w-full max-w-5xl object-cover"
+          class="col-start-2 w-full rounded-lg object-cover max-h-80"
         />
       )}
 
