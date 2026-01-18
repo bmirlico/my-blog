@@ -18,6 +18,7 @@ import TOCSidebar from "@/components/TOCSidebar.astro";
 import { badgeVariants } from "@/components/ui/badge";
 import Layout from "@/layouts/Layout.astro";
 import { Icon } from "astro-icon/components";
+import { SITE, SOCIAL_LINKS, ICON_MAP } from "@/consts";
 
 import {
 	getAllPosts,
@@ -109,14 +110,13 @@ const breadcrumbItems = [
         <Breadcrumbs items={breadcrumbItems} />
       </div>
 
-      <!-- Cover image -->
-      {post.coverImage && (
-        <img
-          src={post.coverImage.url}
-          alt={post.title}
-          class="col-start-2 w-full rounded-lg"
+      <!-- Navigation Previous/Next Post -->
+      <div class="col-start-2">
+        <PostNavigation
+          newerPost={newer ? { title: newer.title, slug: newer.slug } : undefined}
+          olderPost={older ? { title: older.title, slug: older.slug } : undefined}
         />
-      )}
+      </div>
 
       <!-- Article header (centered) -->
       <section class="col-start-2 flex flex-col gap-y-6 text-center">
@@ -167,13 +167,38 @@ const breadcrumbItems = [
               ))}
             </div>
           )}
-        </div>
 
-        <!-- Navigation Previous/Next Post -->
-        <PostNavigation
-          newerPost={newer ? { title: newer.title, slug: newer.slug } : undefined}
-          olderPost={older ? { title: older.title, slug: older.slug } : undefined}
-        />
+          <!-- Author section -->
+          <div class="flex items-center justify-between mt-6 py-4 border-t border-b border-border">
+            <div class="flex items-center gap-4">
+              <img
+                src={post.author?.profilePicture || "/avatar.png"}
+                alt={SITE.author}
+                class="size-12 rounded-full"
+              />
+              <div class="text-left">
+                <p class="font-medium">{SITE.author}</p>
+                <p class="text-sm text-muted-foreground">{publishedDate}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              {SOCIAL_LINKS.filter(s => ["GitHub", "Twitter", "LinkedIn", "Email"].includes(s.label)).map(link => (
+                <a href={link.href} target="_blank" rel="noopener noreferrer" class="p-2 rounded-full hover:bg-muted transition-colors">
+                  <Icon name={ICON_MAP[link.label]} class="size-5 text-muted-foreground" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <!-- Cover image -->
+          {post.coverImage && (
+            <img
+              src={post.coverImage.url}
+              alt={post.title}
+              class="w-full rounded-lg mt-6"
+            />
+          )}
+        </div>
       </section>
 
       <!-- Wrapper for TOC + Content (always aligned) -->
