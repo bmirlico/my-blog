@@ -11,7 +11,7 @@
  * ```
  */
 
-import { getClient, HASHNODE_HOST, HASHNODE_TOKEN } from "./client";
+import { getClient, HASHNODE_HOST } from "./client";
 import {
 	GET_ALL_POSTS,
 	GET_ALL_SERIES,
@@ -78,11 +78,6 @@ query GetAllPosts {
 			"Cache-Control": "no-cache, no-store, must-revalidate",
 			Pragma: "no-cache",
 		};
-
-		if (HASHNODE_TOKEN) {
-			headers.Authorization = HASHNODE_TOKEN;
-			console.log("[Hashnode API] Using authenticated request");
-		}
 
 		const response = await fetch("https://gql.hashnode.com", {
 			method: "POST",
@@ -172,10 +167,6 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 			"Cache-Control": "no-cache, no-store, must-revalidate",
 			Pragma: "no-cache",
 		};
-
-		if (HASHNODE_TOKEN) {
-			headers.Authorization = HASHNODE_TOKEN;
-		}
 
 		const response = await fetch("https://gql.hashnode.com", {
 			method: "POST",
@@ -287,10 +278,6 @@ query GetAllSeries {
 			Pragma: "no-cache",
 		};
 
-		if (HASHNODE_TOKEN) {
-			headers.Authorization = HASHNODE_TOKEN;
-		}
-
 		const response = await fetch("https://gql.hashnode.com", {
 			method: "POST",
 			headers,
@@ -379,10 +366,6 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 			"Cache-Control": "no-cache, no-store, must-revalidate",
 			Pragma: "no-cache",
 		};
-
-		if (HASHNODE_TOKEN) {
-			headers.Authorization = HASHNODE_TOKEN;
-		}
 
 		const response = await fetch("https://gql.hashnode.com", {
 			method: "POST",
