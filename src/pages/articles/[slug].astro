@@ -87,6 +87,12 @@ const breadcrumbItems = [
 	{ label: "Articles", href: "/articles", icon: "lucide:library-big" },
 	{ label: post?.title || "Article", icon: "lucide:book-open-text" },
 ];
+
+// ISR: Cache 60s on Vercel, stale-while-revalidate 5min
+Astro.response.headers.set(
+	"Cache-Control",
+	"s-maxage=60, stale-while-revalidate=300",
+);
 ---
 
 <Layout>

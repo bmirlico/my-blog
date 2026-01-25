@@ -53,6 +53,12 @@ const breadcrumbs = [
 	{ label: "Series", href: "/series" },
 	{ label: series?.name || "Series", href: "" },
 ];
+
+// ISR: Cache 60s on Vercel, stale-while-revalidate 5min
+Astro.response.headers.set(
+	"Cache-Control",
+	"s-maxage=60, stale-while-revalidate=300",
+);
 ---
 
 <Layout class="max-w-3xl">
