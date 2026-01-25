@@ -79,7 +79,8 @@ query GetAllPosts {
 			Pragma: "no-cache",
 		};
 
-		const response = await fetch("https://gql.hashnode.com", {
+		// Add timestamp to URL to bypass Vercel's fetch cache
+		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
 			method: "POST",
 			headers,
 			body: JSON.stringify({ query }),
@@ -161,6 +162,9 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     }
   `;
 
+	// Cache-bust timestamp to bypass Vercel's fetch cache
+	const timestamp = Date.now();
+
 	try {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
@@ -168,7 +172,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 			Pragma: "no-cache",
 		};
 
-		const response = await fetch("https://gql.hashnode.com", {
+		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
 			method: "POST",
 			headers,
 			body: JSON.stringify({
@@ -278,7 +282,8 @@ query GetAllSeries {
 			Pragma: "no-cache",
 		};
 
-		const response = await fetch("https://gql.hashnode.com", {
+		// Add timestamp to URL to bypass Vercel's fetch cache
+		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
 			method: "POST",
 			headers,
 			body: JSON.stringify({ query }),
@@ -360,6 +365,9 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 		}
 	}`;
 
+	// Cache-bust timestamp to bypass Vercel's fetch cache
+	const timestamp = Date.now();
+
 	try {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
@@ -367,7 +375,7 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 			Pragma: "no-cache",
 		};
 
-		const response = await fetch("https://gql.hashnode.com", {
+		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
 			method: "POST",
 			headers,
 			body: JSON.stringify({ query }),
