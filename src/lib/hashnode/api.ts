@@ -44,8 +44,12 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
 		first,
 	);
 
-	// Static query - ISR on Vercel handles data freshness
+	// Cache-bust timestamp to bypass Stellate CDN cache
+	// TODO: Replace with webhook-based invalidation for better performance
+	const timestamp = Date.now();
+
 	const query = `
+# ts:${timestamp}
 query GetAllPosts {
 	publication(host: "${HASHNODE_HOST}") {
 		posts(first: ${first}) {
@@ -241,8 +245,12 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 		first,
 	);
 
-	// Static query - ISR on Vercel handles data freshness
+	// Cache-bust timestamp to bypass Stellate CDN cache
+	// TODO: Replace with webhook-based invalidation for better performance
+	const timestamp = Date.now();
+
 	const query = `
+# ts:${timestamp}
 query GetAllSeries {
 	publication(host: "${HASHNODE_HOST}") {
 		seriesList(first: ${first}) {
