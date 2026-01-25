@@ -42,10 +42,10 @@ const sortedYears = Object.keys(postsByYear).sort(
 const pageTitle = "Articles";
 const pageDescription = "All articles and writings.";
 
-// ISR: Cache 60s on Vercel, stale-while-revalidate 5min
+// ISR: Cache 1s on Vercel (like Hashnode starter-kit)
 Astro.response.headers.set(
 	"Cache-Control",
-	"s-maxage=60, stale-while-revalidate=300",
+	"s-maxage=1, stale-while-revalidate=59",
 );
 ---
 
