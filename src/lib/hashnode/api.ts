@@ -37,16 +37,18 @@ import type {
  * @returns List of articles sorted by publication date (newest first)
  */
 export async function getAllPosts(first: number = 50): Promise<Post[]> {
+	// Cache-bust timestamp to bypass Vercel fetch cache and Stellate CDN
+	const timestamp = Date.now();
+	const url = `https://gql.hashnode.com?_t=${timestamp}`;
+
 	console.log(
 		"[Hashnode API] getAllPosts called with host:",
 		HASHNODE_HOST,
 		"first:",
 		first,
+		"url:",
+		url,
 	);
-
-	// Cache-bust timestamp to bypass Stellate CDN cache
-	// TODO: Replace with webhook-based invalidation for better performance
-	const timestamp = Date.now();
 
 	const query = `
 # ts:${timestamp}
@@ -79,8 +81,8 @@ query GetAllPosts {
 			Pragma: "no-cache",
 		};
 
-		// Add timestamp to URL to bypass Vercel's fetch cache
-		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
+		// Use URL with timestamp to bypass Vercel's fetch cache
+		const response = await fetch(url, {
 			method: "POST",
 			headers,
 			body: JSON.stringify({ query }),
