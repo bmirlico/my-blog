@@ -31,6 +31,13 @@ export const HASHNODE_HOST =
 	process.env.HASHNODE_HOST ||
 	"the-learning-machine.hashnode.dev"; // Fallback hardcodé pour garantir le fonctionnement
 
+/**
+ * Hashnode Personal Access Token (optional)
+ * Used to authenticate API requests - authenticated requests bypass Stellate CDN cache
+ */
+export const HASHNODE_TOKEN =
+	import.meta.env.HASHNODE_TOKEN || process.env.HASHNODE_TOKEN || "";
+
 // Log pour debug (visible dans les logs de build Vercel)
 console.log("[Hashnode] HASHNODE_HOST:", HASHNODE_HOST);
 

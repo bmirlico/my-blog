@@ -11,7 +11,7 @@
  * ```
  */
 
-import { getClient, HASHNODE_HOST } from "./client";
+import { getClient, HASHNODE_HOST, HASHNODE_TOKEN } from "./client";
 import {
 	GET_ALL_POSTS,
 	GET_ALL_SERIES,
@@ -68,13 +68,21 @@ query GetAllPosts {
 	}`;
 
 	try {
+		// Build headers - add Authorization if token is available (bypasses Stellate CDN cache)
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			"Cache-Control": "no-cache, no-store, must-revalidate",
+			Pragma: "no-cache",
+		};
+
+		if (HASHNODE_TOKEN) {
+			headers.Authorization = HASHNODE_TOKEN;
+			console.log("[Hashnode API] Using authenticated request");
+		}
+
 		const response = await fetch("https://gql.hashnode.com", {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"Cache-Control": "no-cache, no-store, must-revalidate",
-				Pragma: "no-cache",
-			},
+			headers,
 			body: JSON.stringify({ query }),
 			cache: "no-store",
 		});
@@ -154,19 +162,20 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     }
   `;
 
-	// Timestamp to force absolute cache-bust
-	const timestamp = Date.now();
-
 	try {
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			"Cache-Control": "no-cache, no-store, must-revalidate",
+			Pragma: "no-cache",
+		};
+
+		if (HASHNODE_TOKEN) {
+			headers.Authorization = HASHNODE_TOKEN;
+		}
+
 		const response = await fetch("https://gql.hashnode.com", {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"Cache-Control": "no-cache, no-store, must-revalidate",
-				Pragma: "no-cache",
-				"X-Request-Time": timestamp.toString(),
-				"User-Agent": `Astro-Blog-Builder/1.0 (${timestamp})`,
-			},
+			headers,
 			body: JSON.stringify({
 				query,
 				variables: { host: HASHNODE_HOST, slug },
@@ -264,13 +273,19 @@ query GetAllSeries {
 	}`;
 
 	try {
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			"Cache-Control": "no-cache, no-store, must-revalidate",
+			Pragma: "no-cache",
+		};
+
+		if (HASHNODE_TOKEN) {
+			headers.Authorization = HASHNODE_TOKEN;
+		}
+
 		const response = await fetch("https://gql.hashnode.com", {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"Cache-Control": "no-cache, no-store, must-revalidate",
-				Pragma: "no-cache",
-			},
+			headers,
 			body: JSON.stringify({ query }),
 			cache: "no-store",
 		});
@@ -351,13 +366,19 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 	}`;
 
 	try {
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			"Cache-Control": "no-cache, no-store, must-revalidate",
+			Pragma: "no-cache",
+		};
+
+		if (HASHNODE_TOKEN) {
+			headers.Authorization = HASHNODE_TOKEN;
+		}
+
 		const response = await fetch("https://gql.hashnode.com", {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"Cache-Control": "no-cache, no-store, must-revalidate",
-				Pragma: "no-cache",
-			},
+			headers,
 			body: JSON.stringify({ query }),
 			cache: "no-store",
 		});
