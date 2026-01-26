@@ -74,11 +74,9 @@ query GetAllPosts {
 	}`;
 
 	try {
-		// Build headers - add Authorization if token is available (bypasses Stellate CDN cache)
+		// Minimal headers like graphql-request library (no anti-cache headers)
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"Cache-Control": "no-cache, no-store, must-revalidate",
-			Pragma: "no-cache",
 		};
 
 		// Use URL with timestamp to bypass Vercel's fetch cache
@@ -170,8 +168,6 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 	try {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"Cache-Control": "no-cache, no-store, must-revalidate",
-			Pragma: "no-cache",
 		};
 
 		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
@@ -280,8 +276,6 @@ query GetAllSeries {
 	try {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"Cache-Control": "no-cache, no-store, must-revalidate",
-			Pragma: "no-cache",
 		};
 
 		// Add timestamp to URL to bypass Vercel's fetch cache
@@ -373,8 +367,6 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 	try {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"Cache-Control": "no-cache, no-store, must-revalidate",
-			Pragma: "no-cache",
 		};
 
 		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
