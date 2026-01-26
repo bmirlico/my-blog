@@ -50,9 +50,12 @@ export async function getAllPosts(first: number = 50): Promise<Post[]> {
 		url,
 	);
 
+	// Dynamic operation name to bypass Stellate CDN cache
+	// Stellate uses operation name as part of cache key
+	const operationName = `GetAllPosts_${timestamp}`;
+
 	const query = `
-# ts:${timestamp}
-query GetAllPosts {
+query ${operationName} {
 	publication(host: "${HASHNODE_HOST}") {
 		posts(first: ${first}) {
 				edges {
@@ -242,9 +245,11 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 	// TODO: Replace with webhook-based invalidation for better performance
 	const timestamp = Date.now();
 
+	// Dynamic operation name to bypass Stellate CDN cache
+	const operationName = `GetAllSeries_${timestamp}`;
+
 	const query = `
-# ts:${timestamp}
-query GetAllSeries {
+query ${operationName} {
 	publication(host: "${HASHNODE_HOST}") {
 		seriesList(first: ${first}) {
 				edges {
