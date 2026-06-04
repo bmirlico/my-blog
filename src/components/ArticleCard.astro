@@ -86,8 +86,10 @@ const formattedDate = formatDate(post.publishedAt);
       </div>
     </div>
 
-    <!-- Image de couverture (optionnelle, affichée sur les écrans plus larges) -->
-    {post.coverImage && (
+    <!-- Image de couverture (optionnelle : Hashnode renvoie { url: "" } quand il
+         n'y en a pas, donc on teste l'URL et pas seulement l'objet). Sans image,
+         le bloc texte (flex-1) occupe toute la largeur. -->
+    {post.coverImage?.url && (
       <div class="hidden sm:block shrink-0">
         <img
           src={post.coverImage.url}

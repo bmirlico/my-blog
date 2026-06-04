@@ -203,8 +203,8 @@ Astro.response.headers.set(
             </div>
           </div>
 
-          <!-- Cover image -->
-          {post.coverImage && (
+          <!-- Cover image (Hashnode renvoie { url: "" } s'il n'y en a pas) -->
+          {post.coverImage?.url && (
             <img
               src={post.coverImage.url}
               alt={post.title}
