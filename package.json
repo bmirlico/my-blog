@@ -75,6 +75,7 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
+    "@types/hast": "^3.0.4",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-astro-organize-imports": "^0.4.11",
