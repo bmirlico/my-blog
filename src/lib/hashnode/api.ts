@@ -377,6 +377,29 @@ export interface ExtractedHeading {
 }
 
 /**
+ * Decodes the common HTML entities found in heading text.
+ *
+ * extractHeadingsFromHtml strips inner tags but leaves entities like &amp;
+ * intact. Since the TOC renders the text via `{heading.text}` (which Astro
+ * re-escapes), an undecoded `&amp;` would display literally as "&amp;".
+ * Decoding here gives the TOC the real character (e.g. "Sources & References").
+ */
+function decodeEntities(s: string): string {
+	return s
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, '"')
+		.replace(/&#0*39;|&#x0*27;|&apos;/gi, "'")
+		.replace(/&nbsp;/g, " ")
+		.replace(/&#x?[0-9a-fA-F]+;/g, (m) => {
+			const isHex = /^&#x/i.test(m);
+			const code = parseInt(m.replace(/&#x?|;/gi, ""), isHex ? 16 : 10);
+			return Number.isFinite(code) ? String.fromCodePoint(code) : m;
+		})
+		.replace(/&amp;/g, "&"); // last, so "&amp;lt;" decodes to "&lt;" not "<"
+}
+
+/**
  * Extracts headings (h2-h6) from HTML content to generate a table of contents
  * @param html - HTML content of the article
  * @returns List of headings with their depth, slug and text
@@ -395,12 +418,15 @@ export function extractHeadingsFromHtml(html: string): ExtractedHeading[] {
 	while ((match = headingRegex.exec(html)) !== null) {
 		const depth = parseInt(match[1], 10);
 		let id = match[2] || "";
-		const rawText = match[3];
 
-		// Clean HTML text (remove internal tags)
-		const text = rawText.replace(/<[^>]+>/g, "").trim();
+		// Clean HTML text (remove internal tags) and decode entities so the
+		// TOC displays real characters (e.g. "&" instead of "&amp;").
+		const text = decodeEntities(match[3].replace(/<[^>]+>/g, "")).trim();
 
-		// If no id, generate a slug from the text
+		// When the HTML already carries an id (rehype-slug injects one upstream,
+		// and old Hashnode articles ship their own), use it verbatim so the TOC
+		// anchor matches the rendered heading. Only fall back to a generated
+		// slug if none is present.
 		if (!id) {
 			id = text
 				.toLowerCase()

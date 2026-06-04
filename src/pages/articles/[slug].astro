@@ -28,6 +28,7 @@ import {
 	extractHeadingsFromHtml,
 	getAdjacentPosts,
 } from "@/lib/hashnode/api";
+import { processArticleHtml } from "@/lib/hashnode/render";
 import type { Post, Series } from "@/lib/hashnode/types";
 
 // Generate all possible routes at build time
@@ -77,10 +78,15 @@ if (post?.series?.slug) {
 // Date formatting
 const publishedDate = post ? formatDate(post.publishedAt) : "";
 
-// Extract headings for TOC
-const headings = post?.content?.html
-	? extractHeadingsFromHtml(post.content.html)
-	: [];
+// Process the Hashnode HTML server-side: inject heading ids + highlight code.
+// The SAME processed HTML feeds both the TOC extraction and the rendered
+// content, so TOC anchor slugs always match the rendered heading ids.
+const processedHtml = post?.content?.html
+	? await processArticleHtml(post.content.html)
+	: "";
+
+// Extract headings for TOC from the processed HTML (ids now present).
+const headings = processedHtml ? extractHeadingsFromHtml(processedHtml) : [];
 
 // Breadcrumbs with icons
 const breadcrumbItems = [
@@ -218,8 +224,8 @@ Astro.response.headers.set(
 
         <!-- Article content -->
         <article class="prose col-start-2 max-w-none dark:prose-invert">
-          {post.content?.html ? (
-            <Fragment set:html={post.content.html} />
+          {processedHtml ? (
+            <Fragment set:html={processedHtml} />
           ) : (
             <p class="text-muted-foreground">Content not available.</p>
           )}
