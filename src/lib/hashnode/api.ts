@@ -11,7 +11,7 @@
  * ```
  */
 
-import { getClient, HASHNODE_HOST } from "./client";
+import { getClient, hashnodeFetch, HASHNODE_HOST } from "./client";
 import {
 	GET_ALL_POSTS,
 	GET_ALL_SERIES,
@@ -37,27 +37,17 @@ import type {
  * @returns List of articles sorted by publication date (newest first)
  */
 export async function getAllPosts(first: number = 50): Promise<Post[]> {
-	// Cache-bust timestamp to bypass Vercel fetch cache and Stellate CDN
-	const timestamp = Date.now();
-	const url = `https://gql.hashnode.com?_t=${timestamp}`;
-
 	console.log(
 		"[Hashnode API] getAllPosts called with host:",
 		HASHNODE_HOST,
 		"first:",
 		first,
-		"url:",
-		url,
 	);
 
-	// Dynamic operation name to bypass Stellate CDN cache
-	// Stellate uses operation name as part of cache key
-	const operationName = `GetAllPosts_${timestamp}`;
-
 	const query = `
-query ${operationName} {
-	publication(host: "${HASHNODE_HOST}") {
-		posts(first: ${first}) {
+query GetAllPosts($host: String!, $first: Int!) {
+	publication(host: $host) {
+		posts(first: $first) {
 				edges {
 					node {
 						id
@@ -77,26 +67,10 @@ query ${operationName} {
 	}`;
 
 	try {
-		// Minimal headers like graphql-request library (no anti-cache headers)
-		const headers: Record<string, string> = {
-			"Content-Type": "application/json",
-		};
-
-		// Use URL with timestamp to bypass Vercel's fetch cache
-		const response = await fetch(url, {
-			method: "POST",
-			headers,
-			body: JSON.stringify({ query }),
-			cache: "no-store",
+		const data = await hashnodeFetch({
+			query,
+			variables: { host: HASHNODE_HOST, first },
 		});
-
-		console.log("[Hashnode API] Response status:", response.status);
-
-		const data = await response.json();
-		console.log(
-			"[Hashnode API] Response data:",
-			JSON.stringify(data, null, 2).slice(0, 1000),
-		);
 
 		// Check for GraphQL errors
 		if (data.errors) {
@@ -165,30 +139,12 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     }
   `;
 
-	// Cache-bust timestamp to bypass Vercel's fetch cache
-	const timestamp = Date.now();
-
 	try {
-		const headers: Record<string, string> = {
-			"Content-Type": "application/json",
-		};
-
-		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
-			method: "POST",
-			headers,
-			body: JSON.stringify({
-				query,
-				variables: { host: HASHNODE_HOST, slug },
-			}),
-			cache: "no-store",
+		const data = await hashnodeFetch({
+			query,
+			variables: { host: HASHNODE_HOST, slug },
 		});
 
-		console.log(
-			"[Hashnode API] getPostBySlug response status:",
-			response.status,
-		);
-
-		const data = await response.json();
 		console.log(
 			"[Hashnode API] getPostBySlug raw response:",
 			JSON.stringify(data).slice(0, 500),
@@ -241,17 +197,10 @@ export async function getAllSeries(first: number = 20): Promise<Series[]> {
 		first,
 	);
 
-	// Cache-bust timestamp to bypass Stellate CDN cache
-	// TODO: Replace with webhook-based invalidation for better performance
-	const timestamp = Date.now();
-
-	// Dynamic operation name to bypass Stellate CDN cache
-	const operationName = `GetAllSeries_${timestamp}`;
-
 	const query = `
-query ${operationName} {
-	publication(host: "${HASHNODE_HOST}") {
-		seriesList(first: ${first}) {
+query GetAllSeries($host: String!, $first: Int!) {
+	publication(host: $host) {
+		seriesList(first: $first) {
 				edges {
 					node {
 						id
@@ -279,24 +228,11 @@ query ${operationName} {
 	}`;
 
 	try {
-		const headers: Record<string, string> = {
-			"Content-Type": "application/json",
-		};
-
-		// Add timestamp to URL to bypass Vercel's fetch cache
-		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
-			method: "POST",
-			headers,
-			body: JSON.stringify({ query }),
-			cache: "no-store",
+		const data = await hashnodeFetch({
+			query,
+			variables: { host: HASHNODE_HOST, first },
 		});
 
-		console.log(
-			"[Hashnode API] getAllSeries response status:",
-			response.status,
-		);
-
-		const data = await response.json();
 		console.log(
 			"[Hashnode API] getAllSeries response:",
 			JSON.stringify(data, null, 2).slice(0, 1000),
@@ -339,10 +275,10 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 		HASHNODE_HOST,
 	);
 
-	// Inline query (without variables) to avoid Stellate cache issues
-	const query = `{
-		publication(host: "${HASHNODE_HOST}") {
-			series(slug: "${slug}") {
+	const query = `
+query GetSeriesBySlug($host: String!, $slug: String!) {
+		publication(host: $host) {
+			series(slug: $slug) {
 				id
 				name
 				slug
@@ -366,27 +302,12 @@ export async function getSeriesBySlug(slug: string): Promise<Series | null> {
 		}
 	}`;
 
-	// Cache-bust timestamp to bypass Vercel's fetch cache
-	const timestamp = Date.now();
-
 	try {
-		const headers: Record<string, string> = {
-			"Content-Type": "application/json",
-		};
-
-		const response = await fetch(`https://gql.hashnode.com?_t=${timestamp}`, {
-			method: "POST",
-			headers,
-			body: JSON.stringify({ query }),
-			cache: "no-store",
+		const data = await hashnodeFetch({
+			query,
+			variables: { host: HASHNODE_HOST, slug },
 		});
 
-		console.log(
-			"[Hashnode API] getSeriesBySlug response status:",
-			response.status,
-		);
-
-		const data = await response.json();
 		console.log(
 			"[Hashnode API] getSeriesBySlug for",
 			slug,

@@ -1,5 +1,6 @@
 import { createHmac } from "node:crypto";
 import type { APIRoute } from "astro";
+import { getAuthHeaders, HASHNODE_ENDPOINT } from "@/lib/hashnode/client";
 
 // Hashnode webhook payload types (real format from Hashnode)
 interface HashnodeWebhookPayload {
@@ -63,9 +64,9 @@ async function fetchPostById(postId: string): Promise<PostDetails | null> {
 	`;
 
 	try {
-		const response = await fetch("https://gql.hashnode.com", {
+		const response = await fetch(HASHNODE_ENDPOINT, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: getAuthHeaders(),
 			body: JSON.stringify({ query, variables: { id: postId } }),
 		});
 
