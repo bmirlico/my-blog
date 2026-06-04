@@ -9,6 +9,7 @@
  */
 
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import CodeCopy from "@/components/CodeCopy.astro";
 import Link from "@/components/Link.astro";
 import PageHead from "@/components/PageHead.astro";
 import PostNavigation from "@/components/PostNavigation.astro";
@@ -259,4 +260,7 @@ Astro.response.headers.set(
       </p>
     </section>
   )}
+
+  <!-- Copy-to-clipboard behaviour for code block headers -->
+  <CodeCopy />
 </Layout>

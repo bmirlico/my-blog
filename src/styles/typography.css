@@ -132,6 +132,53 @@
       @apply max-h-[min(68vh,1000px)]! overflow-y-auto [&::-webkit-scrollbar-corner]:hidden;
     }
 
+    /* Code blocks (Hashnode HTML highlighted server-side by rehype-pretty-code).
+       The <figure> is the card; .code-header is the title bar with the language
+       label + Copy button. Theme-aware via --muted / --border tokens. */
+    figure[data-rehype-pretty-code-figure] {
+      @apply my-6 overflow-hidden rounded-lg border;
+    }
+
+    figure[data-rehype-pretty-code-figure] .code-header {
+      @apply bg-muted/40 flex items-center justify-between gap-4 border-b px-4 py-2;
+    }
+
+    figure[data-rehype-pretty-code-figure] .code-lang {
+      @apply text-muted-foreground font-mono text-xs font-medium;
+    }
+
+    figure[data-rehype-pretty-code-figure] .code-copy {
+      @apply text-muted-foreground hover:bg-muted hover:text-foreground inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 font-mono text-xs transition-colors;
+    }
+
+    figure[data-rehype-pretty-code-figure] .code-copy.copied {
+      @apply text-green-600 dark:text-green-400;
+    }
+
+    figure[data-rehype-pretty-code-figure] .code-copy-icon {
+      @apply size-3.5;
+    }
+
+    /* The <pre>/<code> sit inside the card: drop the inline-code chip styling
+       (background, padding, rounding) so only the card frames the block.
+       The code body is ALWAYS dark (independent of the site light/dark theme);
+       only the header above stays theme-aware gray. */
+    figure[data-rehype-pretty-code-figure] pre {
+      @apply m-0 max-h-[min(68vh,1000px)] overflow-auto rounded-none border-0;
+      background-color: #0d1117;
+    }
+
+    figure[data-rehype-pretty-code-figure] code {
+      @apply block bg-transparent p-4 text-sm font-normal;
+      color: #c9d1d9; /* default light text for any untokenized content */
+    }
+
+    /* Force the dark Shiki palette on the tokens so they stay readable on the
+       always-dark background, even in the site's light theme. */
+    figure[data-rehype-pretty-code-figure] [data-line] > * {
+      color: var(--shiki-dark);
+    }
+
     :where(summary):not(:where(.not-prose, .not-prose *)) {
       @apply [&~*]:small [&~*>*]:first:mt-0! [&~*>*]:last:mb-0!;
     }

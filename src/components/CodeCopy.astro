@@ -1,0 +1,54 @@
+---
+/**
+ * CodeCopy — gère les boutons "Copy" des blocs de code des articles.
+ *
+ * Les blocs sont générés côté serveur par src/lib/hashnode/render.ts, qui
+ * injecte un `<button class="code-copy">` dans chaque `<figure>`. Ce composant
+ * ajoute le comportement de copie via une délégation d'événement au niveau
+ * document : un seul listener gère tous les boutons, présents ou injectés plus
+ * tard, et survit aux navigations View Transitions (le module n'est exécuté
+ * qu'une fois).
+ */
+---
+
+<script>
+	declare global {
+		interface Window {
+			__codeCopyBound?: boolean;
+		}
+	}
+
+	if (!window.__codeCopyBound) {
+		window.__codeCopyBound = true;
+
+		document.addEventListener("click", async (event) => {
+			const target = event.target as HTMLElement;
+			const button = target.closest<HTMLButtonElement>(".code-copy");
+			if (!button) return;
+
+			const figure = button.closest("figure");
+			const pre = figure?.querySelector("pre");
+			if (!pre) return;
+
+			// textContent préserve les retours à la ligne (les <span data-line>
+			// shiki sont séparés par de vrais nœuds texte "\n").
+			const code = pre.textContent ?? "";
+
+			try {
+				await navigator.clipboard.writeText(code);
+			} catch {
+				return; // clipboard indisponible (http, permissions) : on abandonne en silence
+			}
+
+			const label = button.querySelector<HTMLElement>(".code-copy-label");
+			const previous = label?.textContent ?? "Copy";
+			button.classList.add("copied");
+			if (label) label.textContent = "Copied!";
+
+			window.setTimeout(() => {
+				button.classList.remove("copied");
+				if (label) label.textContent = previous;
+			}, 2000);
+		});
+	}
+</script>
