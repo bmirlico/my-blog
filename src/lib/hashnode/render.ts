@@ -28,17 +28,8 @@ import rehypeParse from "rehype-parse";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
-import { createHighlighter } from "shiki";
-import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
-
-// Shiki utilise par défaut le moteur WASM (oniguruma), qui échoue à se charger
-// dans la fonction serverless Vercel (le code reste alors non coloré en prod,
-// alors qu'il marche en dev). On force le moteur JavaScript, sans WASM et
-// entièrement bundlable. `forgiving` évite de planter sur un pattern de
-// grammaire que le moteur JS ne saurait pas compiler.
-const jsEngine = createJavaScriptRegexEngine({ forgiving: true });
 
 // Affiche un nom de langage lisible dans la barre de titre (sinon le code brut).
 const LANG_LABELS: Record<string, string> = {
@@ -175,10 +166,6 @@ const processor = unified()
 		theme: { light: "github-light", dark: "github-dark" },
 		// Laisse le fond hériter du style du site plutôt que du thème Shiki.
 		keepBackground: false,
-		// Highlighter avec le moteur JS (cf. jsEngine) pour fonctionner en
-		// serverless Vercel, pas seulement en dev.
-		getHighlighter: (options) =>
-			createHighlighter({ ...options, engine: jsEngine }),
 	})
 	.use(rehypeCodeHeader)
 	.use(rehypeStringify, { allowDangerousHtml: true });
